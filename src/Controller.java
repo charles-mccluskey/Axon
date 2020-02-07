@@ -2,10 +2,35 @@ import java.util.*;
 import nnmodel.*;
 
 public class Controller {
-	static List<Layer> layers;
 
 	public static void main(String[] args) {
-		int inputSize = 5;
+		
+		//gradient descent: w_j = w_j * (step size) * (d_error / d_w_j) for all j
+		int inputSize = 3;
+		double[] input = {1,1,1};
+		List<Double> inputList = new ArrayList<Double>();
+		for(int i=0;i<input.length;i++) {
+			inputList.add(input[i]);
+		}
+		
+		NeuralNetwork test = new NeuralNetwork();
+		test.addLayer();
+		test.addLayer();
+		test.getLayer(0).addNode(0);
+		test.getLayer(0).addNode(0);
+		test.getLayer(1).addNode(0);
+		for(int i=0;i<test.numberOfLayers();i++) {
+			for(int j=0;j<test.getLayer(i).numberOfNodes();j++) {
+				if(i!=0) {//if it's not the input layer...
+					test.getLayer(i).getNode(j).initializeWeights((test.getLayer(i-1).numberOfNodes()));
+				}else {//if it's the input layer
+					test.getLayer(i).getNode(j).initializeWeights(inputList.size());
+				}
+			}
+		}
+		forwardPropagation(test,inputList);
+		
+	/*	int inputSize = 5;
 		layers = new ArrayList<Layer>();
 		int[] layerSize = {4,6,3};
 		
@@ -30,9 +55,9 @@ public class Controller {
 		System.out.println("midOne layer size: "+layers.get(0).numberOfNodes());
 		System.out.println("midTwo layer size: "+layers.get(1).numberOfNodes());
 		System.out.println("last layer size: "+layers.get(2).numberOfNodes());
-	/*	System.out.println("number of weights of mid-node: "+mid.getNode(0).numberOfWeights());
+		System.out.println("number of weights of mid-node: "+mid.getNode(0).numberOfWeights());
 		System.out.println("number of weights of last-node: "+last.getNode(0).numberOfWeights());
-*/
+
 		//Now let's try forward propagation.
 		List<Double> outs = new ArrayList<Double>();
 		List<Double> tmp = new ArrayList<Double>();
@@ -47,6 +72,23 @@ public class Controller {
 		System.out.println("Results of forward propagation:");
 		for(int i=0;i<outs.size();i++) {
 			System.out.println(outs.get(i));
+		}*/
+	}
+	
+	private static void forwardPropagation(NeuralNetwork nn, List<Double> input) {
+		List<Double> outs = new ArrayList<Double>();
+		List<Double> tmp = new ArrayList<Double>();
+		outs = input;
+		for(int i=0;i<nn.numberOfLayers();i++) {//iterate through layer
+			tmp.addAll(outs);
+			outs.clear();
+			for(int n=0;n<nn.getLayer(i).numberOfNodes();n++) {
+				outs.add(nn.getLayer(i).getNode(n).process(tmp));
+			}
+			tmp.clear();
+		}
+		for(int i=0;i<outs.size();i++) {
+			System.out.println("output "+i+" = "+outs.get(i));
 		}
 	}
 

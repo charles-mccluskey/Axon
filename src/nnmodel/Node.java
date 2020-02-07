@@ -4,7 +4,7 @@
 package nnmodel;
 import java.util.*;
 
-// line 3 "../BaseModel.ump"
+// line 8 "../BaseModel.ump"
 public class Node
 {
 
@@ -99,11 +99,17 @@ public class Node
   {
     return layer;
   }
-  /* Code from template association_SetOneToMany */
+  /* Code from template association_SetOneToMandatoryMany */
   public boolean setLayer(Layer aLayer)
   {
     boolean wasSet = false;
+    //Must provide layer to node
     if (aLayer == null)
+    {
+      return wasSet;
+    }
+
+    if (layer != null && layer.numberOfNodes() <= Layer.minimumNumberOfNodes())
     {
       return wasSet;
     }
@@ -112,7 +118,12 @@ public class Node
     layer = aLayer;
     if (existingLayer != null && !existingLayer.equals(aLayer))
     {
-      existingLayer.removeNode(this);
+      boolean didRemove = existingLayer.removeNode(this);
+      if (!didRemove)
+      {
+        layer = existingLayer;
+        return wasSet;
+      }
     }
     layer.addNode(this);
     wasSet = true;
@@ -129,23 +140,45 @@ public class Node
     }
   }
 
-  // line 25 "../BaseModel.ump"
+
+  /**
+   * public Node(double aBias, Layer aLayer, Layer inputLayer)//constructor for hidden/output layers
+   * {
+   * 
+   * bias = aBias;
+   * weights = new ArrayList<Double>();
+   * for(int i=0;i<inputLayer.numberOfNodes();i++) {
+   * addWeight(1.0);
+   * }
+   * boolean didAddLayer = setLayer(aLayer);
+   * if (!didAddLayer)
+   * {
+   * throw new RuntimeException("Unable to create node due to layer");
+   * }
+   * }
+   */
+  // line 30 "../BaseModel.ump"
+  public void initializeWeights(int prevLayerSize){
+	  while(numberOfWeights()<prevLayerSize) {
+		  Random rng = new Random();
+		  double init = rng.nextDouble();
+		  addWeight(init);
+	  }
+  }
+
+  // line 38 "../BaseModel.ump"
    private double sigmoid(double input){
     return 1 / (1 + Math.exp(-1*input));
   }
 
-  // line 29 "../BaseModel.ump"
+  // line 42 "../BaseModel.ump"
    public double process(List<Double> input){
-    double sum = getBias();
-		int inputs =0;
-		for(int i=0;i<getLayer().numberOfInputNeighbors();i++) {
-			inputs+=getLayer().getInputNeighbor(i).numberOfNodes();
-		}//retrieve number of input nodes from one or more input layers
-		
-		for(int i=0;i<inputs;i++) {//calculate input of sigmoid function: WX + b
-			sum += getWeight(i)*input.get(i);
-		}
-		return sigmoid(sum);
+	   double sum = getBias();
+	   for(int i=0;i<input.size();i++) {//calculate input of sigmoid function: WX + b
+		   sum += getWeight(i)*input.get(i);
+	   }
+	   //System.out.println("sum = "+sum);
+	   return sigmoid(sum);
   }
 
 
@@ -154,25 +187,5 @@ public class Node
     return super.toString() + "["+
             "bias" + ":" + getBias()+ "]" + System.getProperties().getProperty("line.separator") +
             "  " + "layer = "+(getLayer()!=null?Integer.toHexString(System.identityHashCode(getLayer())):"null");
-  }  
-  //------------------------
-  // DEVELOPER CODE - PROVIDED AS-IS
-  //------------------------
-  
-  // line 9 "../BaseModel.ump"
-  public Node (double aBias, Layer aLayer, Layer inputLayer)//constructor for hidden/output layers 
-  {
-    bias = aBias;
-    weights = new ArrayList<Double>();
-    for(int i=0;i<inputLayer.numberOfNodes();i++) {
-    	addWeight(1.0);
-    }
-    boolean didAddLayer = setLayer(aLayer);
-    if (!didAddLayer)
-    {
-      throw new RuntimeException("Unable to create node due to layer");
-    }
   }
-
-  
 }

@@ -4,7 +4,7 @@
 package nnmodel;
 import java.util.*;
 
-// line 43 "../BaseModel.ump"
+// line 56 "../BaseModel.ump"
 public class Layer
 {
 
@@ -24,17 +24,22 @@ public class Layer
   //Layer Associations
   private List<Node> nodes;
   private Layer outputNeighbor;
-  private List<Layer> inputNeighbors;
+  private NeuralNetwork neuralNetwork;
+  private Layer inputNeighbor;
 
   //------------------------
   // CONSTRUCTOR
   //------------------------
 
-  public Layer()
+  public Layer(NeuralNetwork aNeuralNetwork)
   {
     id = nextId++;
     nodes = new ArrayList<Node>();
-    inputNeighbors = new ArrayList<Layer>();
+    boolean didAddNeuralNetwork = setNeuralNetwork(aNeuralNetwork);
+    if (!didAddNeuralNetwork)
+    {
+      throw new RuntimeException("Unable to create layer due to neuralNetwork");
+    }
   }
 
   //------------------------
@@ -86,45 +91,38 @@ public class Layer
     boolean has = outputNeighbor != null;
     return has;
   }
-  /* Code from template association_GetMany */
-  public Layer getInputNeighbor(int index)
+  /* Code from template association_GetOne */
+  public NeuralNetwork getNeuralNetwork()
   {
-    Layer aInputNeighbor = inputNeighbors.get(index);
-    return aInputNeighbor;
+    return neuralNetwork;
+  }
+  /* Code from template association_GetOne */
+  public Layer getInputNeighbor()
+  {
+    return inputNeighbor;
   }
 
-  public List<Layer> getInputNeighbors()
+  public boolean hasInputNeighbor()
   {
-    List<Layer> newInputNeighbors = Collections.unmodifiableList(inputNeighbors);
-    return newInputNeighbors;
-  }
-
-  public int numberOfInputNeighbors()
-  {
-    int number = inputNeighbors.size();
-    return number;
-  }
-
-  public boolean hasInputNeighbors()
-  {
-    boolean has = inputNeighbors.size() > 0;
+    boolean has = inputNeighbor != null;
     return has;
   }
-
-  public int indexOfInputNeighbor(Layer aInputNeighbor)
+  /* Code from template association_IsNumberOfValidMethod */
+  public boolean isNumberOfNodesValid()
   {
-    int index = inputNeighbors.indexOf(aInputNeighbor);
-    return index;
+    boolean isValid = numberOfNodes() >= minimumNumberOfNodes();
+    return isValid;
   }
   /* Code from template association_MinimumNumberOfMethod */
   public static int minimumNumberOfNodes()
   {
-    return 0;
+    return 1;
   }
-  /* Code from template association_AddManyToOne */
+  /* Code from template association_AddMandatoryManyToOne */
   public Node addNode(double aBias)
   {
-    return new Node(aBias, this);
+    Node aNewNode = new Node(aBias, this);
+    return aNewNode;
   }
 
   public boolean addNode(Node aNode)
@@ -133,6 +131,11 @@ public class Layer
     if (nodes.contains(aNode)) { return false; }
     Layer existingLayer = aNode.getLayer();
     boolean isNewLayer = existingLayer != null && !this.equals(existingLayer);
+
+    if (isNewLayer && existingLayer.numberOfNodes() <= minimumNumberOfNodes())
+    {
+      return wasAdded;
+    }
     if (isNewLayer)
     {
       aNode.setLayer(this);
@@ -149,11 +152,19 @@ public class Layer
   {
     boolean wasRemoved = false;
     //Unable to remove aNode, as it must always have a layer
-    if (!this.equals(aNode.getLayer()))
+    if (this.equals(aNode.getLayer()))
     {
-      nodes.remove(aNode);
-      wasRemoved = true;
+      return wasRemoved;
     }
+
+    //layer already at minimum (1)
+    if (numberOfNodes() <= minimumNumberOfNodes())
+    {
+      return wasRemoved;
+    }
+
+    nodes.remove(aNode);
+    wasRemoved = true;
     return wasRemoved;
   }
   /* Code from template association_AddIndexControlFunctions */
@@ -188,93 +199,90 @@ public class Layer
     }
     return wasAdded;
   }
-  /* Code from template association_SetOptionalOneToMany */
-  public boolean setOutputNeighbor(Layer aOutputNeighbor)
+  /* Code from template association_SetOptionalOneToOptionalOne */
+  public boolean setOutputNeighbor(Layer aNewOutputNeighbor)
   {
     boolean wasSet = false;
-    Layer existingOutputNeighbor = outputNeighbor;
-    outputNeighbor = aOutputNeighbor;
-    if (existingOutputNeighbor != null && !existingOutputNeighbor.equals(aOutputNeighbor))
+    if (aNewOutputNeighbor == null)
     {
-      existingOutputNeighbor.removeInputNeighbor(this);
+      Layer existingOutputNeighbor = outputNeighbor;
+      outputNeighbor = null;
+      
+      if (existingOutputNeighbor != null && existingOutputNeighbor.getInputNeighbor() != null)
+      {
+        existingOutputNeighbor.setInputNeighbor(null);
+      }
+      wasSet = true;
+      return wasSet;
     }
-    if (aOutputNeighbor != null)
+
+    Layer currentOutputNeighbor = getOutputNeighbor();
+    if (currentOutputNeighbor != null && !currentOutputNeighbor.equals(aNewOutputNeighbor))
     {
-      aOutputNeighbor.addInputNeighbor(this);
+      currentOutputNeighbor.setInputNeighbor(null);
+    }
+
+    outputNeighbor = aNewOutputNeighbor;
+    Layer existingInputNeighbor = aNewOutputNeighbor.getInputNeighbor();
+
+    if (!equals(existingInputNeighbor))
+    {
+      aNewOutputNeighbor.setInputNeighbor(this);
     }
     wasSet = true;
     return wasSet;
   }
-  /* Code from template association_MinimumNumberOfMethod */
-  public static int minimumNumberOfInputNeighbors()
+  /* Code from template association_SetOneToMany */
+  public boolean setNeuralNetwork(NeuralNetwork aNeuralNetwork)
   {
-    return 0;
-  }
-  /* Code from template association_AddManyToOptionalOne */
-  public boolean addInputNeighbor(Layer aInputNeighbor)
-  {
-    boolean wasAdded = false;
-    if (inputNeighbors.contains(aInputNeighbor)) { return false; }
-    Layer existingOutputNeighbor = aInputNeighbor.getOutputNeighbor();
-    if (existingOutputNeighbor == null)
+    boolean wasSet = false;
+    if (aNeuralNetwork == null)
     {
-      aInputNeighbor.setOutputNeighbor(this);
+      return wasSet;
     }
-    else if (!this.equals(existingOutputNeighbor))
-    {
-      existingOutputNeighbor.removeInputNeighbor(aInputNeighbor);
-      addInputNeighbor(aInputNeighbor);
-    }
-    else
-    {
-      inputNeighbors.add(aInputNeighbor);
-    }
-    wasAdded = true;
-    return wasAdded;
-  }
 
-  public boolean removeInputNeighbor(Layer aInputNeighbor)
+    NeuralNetwork existingNeuralNetwork = neuralNetwork;
+    neuralNetwork = aNeuralNetwork;
+    if (existingNeuralNetwork != null && !existingNeuralNetwork.equals(aNeuralNetwork))
+    {
+      existingNeuralNetwork.removeLayer(this);
+    }
+    neuralNetwork.addLayer(this);
+    wasSet = true;
+    return wasSet;
+  }
+  /* Code from template association_SetOptionalOneToOptionalOne */
+  public boolean setInputNeighbor(Layer aNewInputNeighbor)
   {
-    boolean wasRemoved = false;
-    if (inputNeighbors.contains(aInputNeighbor))
+    boolean wasSet = false;
+    if (aNewInputNeighbor == null)
     {
-      inputNeighbors.remove(aInputNeighbor);
-      aInputNeighbor.setOutputNeighbor(null);
-      wasRemoved = true;
+      Layer existingInputNeighbor = inputNeighbor;
+      inputNeighbor = null;
+      
+      if (existingInputNeighbor != null && existingInputNeighbor.getOutputNeighbor() != null)
+      {
+        existingInputNeighbor.setOutputNeighbor(null);
+      }
+      wasSet = true;
+      return wasSet;
     }
-    return wasRemoved;
-  }
-  /* Code from template association_AddIndexControlFunctions */
-  public boolean addInputNeighborAt(Layer aInputNeighbor, int index)
-  {  
-    boolean wasAdded = false;
-    if(addInputNeighbor(aInputNeighbor))
-    {
-      if(index < 0 ) { index = 0; }
-      if(index > numberOfInputNeighbors()) { index = numberOfInputNeighbors() - 1; }
-      inputNeighbors.remove(aInputNeighbor);
-      inputNeighbors.add(index, aInputNeighbor);
-      wasAdded = true;
-    }
-    return wasAdded;
-  }
 
-  public boolean addOrMoveInputNeighborAt(Layer aInputNeighbor, int index)
-  {
-    boolean wasAdded = false;
-    if(inputNeighbors.contains(aInputNeighbor))
+    Layer currentInputNeighbor = getInputNeighbor();
+    if (currentInputNeighbor != null && !currentInputNeighbor.equals(aNewInputNeighbor))
     {
-      if(index < 0 ) { index = 0; }
-      if(index > numberOfInputNeighbors()) { index = numberOfInputNeighbors() - 1; }
-      inputNeighbors.remove(aInputNeighbor);
-      inputNeighbors.add(index, aInputNeighbor);
-      wasAdded = true;
-    } 
-    else 
-    {
-      wasAdded = addInputNeighborAt(aInputNeighbor, index);
+      currentInputNeighbor.setOutputNeighbor(null);
     }
-    return wasAdded;
+
+    inputNeighbor = aNewInputNeighbor;
+    Layer existingOutputNeighbor = aNewInputNeighbor.getOutputNeighbor();
+
+    if (!equals(existingOutputNeighbor))
+    {
+      aNewInputNeighbor.setOutputNeighbor(this);
+    }
+    wasSet = true;
+    return wasSet;
   }
 
   public void delete()
@@ -286,29 +294,25 @@ public class Layer
     }
     if (outputNeighbor != null)
     {
-      Layer placeholderOutputNeighbor = outputNeighbor;
-      this.outputNeighbor = null;
-      placeholderOutputNeighbor.removeInputNeighbor(this);
+      outputNeighbor.setInputNeighbor(null);
     }
-    while( !inputNeighbors.isEmpty() )
+    NeuralNetwork placeholderNeuralNetwork = neuralNetwork;
+    this.neuralNetwork = null;
+    if(placeholderNeuralNetwork != null)
     {
-      inputNeighbors.get(0).setOutputNeighbor(null);
+      placeholderNeuralNetwork.removeLayer(this);
     }
-  }
-
-  // line 51 "../BaseModel.ump"
-   public  Layer(Layer inputLayer){
-    id = nextId++;
-    nodes = new ArrayList<Node>();
-    inputNeighbors = new ArrayList<Layer>();
-    inputNeighbors.add(inputLayer);
-    inputLayer.setOutputNeighbor(this);
+    if (inputNeighbor != null)
+    {
+      inputNeighbor.setOutputNeighbor(null);
+    }
   }
 
 
   public String toString()
   {
     return super.toString() + "["+
-            "id" + ":" + getId()+ "]";
+            "id" + ":" + getId()+ "]" + System.getProperties().getProperty("line.separator") +
+            "  " + "neuralNetwork = "+(getNeuralNetwork()!=null?Integer.toHexString(System.identityHashCode(getNeuralNetwork())):"null");
   }
 }

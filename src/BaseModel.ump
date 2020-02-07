@@ -1,12 +1,17 @@
 namespace nnmodel;
 
+class NeuralNetwork{
+    1 <@>- * Layer layers;
+}
+
+
 class Node
 {
 	depend java.util.*;
 	Double bias;
 	settable Double[] weights;
 
-  public Node(double aBias, Layer aLayer, Layer inputLayer)//constructor for hidden/output layers
+  /*public Node(double aBias, Layer aLayer, Layer inputLayer)//constructor for hidden/output layers
   {
 	
     bias = aBias;
@@ -19,41 +24,45 @@ class Node
     {
       throw new RuntimeException("Unable to create node due to layer");
     }
+  }*/
+  
+  public void initializeWeights(int prevLayerSize){
+	  while(numberOfWeights()<prevLayerSize) {
+		  Random rng = new Random();
+		  double init = rng.nextDouble();
+		  addWeight(init);
+	  }
   }
 
   	private double sigmoid(double input) {
 		  return 1 / (1 + Math.exp(-1*input));
 	}
 	
-	public double process(List<Double> input) {
-		double sum = getBias();
-		int inputs =0;
-		for(int i=0;i<getLayer().numberOfInputNeighbors();i++) {
-			inputs+=getLayer().getInputNeighbor(i).numberOfNodes();
-		}//retrieve number of input nodes from one or more input layers
-		
-		for(int i=0;i<inputs;i++) {//calculate input of sigmoid function: WX + b
-			sum += getWeight(i)*input.get(i);
-		}
-		return sigmoid(sum);
-	}
+  public double process(List<Double> input){
+	   double sum = getBias();
+	   for(int i=0;i<input.size();i++) {//calculate input of sigmoid function: WX + b
+		   sum += getWeight(i)*input.get(i);
+	   }
+	   return sigmoid(sum);
+  }
 	
 }
 
 class Layer
 {
-  1 -- * Node nodes;
-  0..* inputNeighbors -- 0..1 Layer outputNeighbor;
+  1 -- 1..* Node nodes;
+  //0..* inputNeighbors -- 0..1 Layer outputNeighbor;
+  0..1 inputNeighbor -- 0..1 Layer outputNeighbor;
   autounique id;
   
-  public Layer(Layer inputLayer)
+  /*public Layer(Layer inputLayer)
   {
     id = nextId++;
     nodes = new ArrayList<Node>();
     inputNeighbors = new ArrayList<Layer>();
     inputNeighbors.add(inputLayer);
     inputLayer.setOutputNeighbor(this);
-  }
+  }*/
   
 }
 
