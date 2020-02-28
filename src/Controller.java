@@ -75,6 +75,29 @@ public class Controller {
 		}*/
 	}
 	
+	private static NeuralNetwork initializeRecNetwork(int layers, int nodesPerLayer, int inputsize) {
+		NeuralNetwork network = new NeuralNetwork();
+		
+		for(int i=0;i<layers;i++) {
+			network.addLayer();
+			for(int j=0;j<nodesPerLayer;j++) {
+				network.getLayer(i).addNode(0);
+			}
+		}
+		
+		for(int i=0;i<network.numberOfLayers();i++) {
+			for(int j=0;j<network.getLayer(i).numberOfNodes();j++) {
+				if(i!=0) {//if it's not the input layer...
+					network.getLayer(i).getNode(j).initializeWeights((network.getLayer(i-1).numberOfNodes()));
+				}else {//if it's the input layer
+					network.getLayer(i).getNode(j).initializeWeights(inputsize);
+				}
+			}
+		}
+		
+		return network;
+	}
+	
 	private static void forwardPropagation(NeuralNetwork nn, List<Double> input) {
 		List<Double> outs = new ArrayList<Double>();
 		List<Double> tmp = new ArrayList<Double>();
