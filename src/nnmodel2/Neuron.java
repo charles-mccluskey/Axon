@@ -333,18 +333,14 @@ public class Neuron
   }
 
   // line 38 "../Model2.ump"
-   public double process(List<Double> input){
-    double sum = getBias();
+   public void processInputs(){
+	   double sum = getBias();
 	   List<Connection> connections = getInputConnections();
 	   List<Double> weights = new ArrayList<Double>();
 	   for(int i=0;i<connections.size();i++) {
-		   weights.add(connections.get(i).getWeight().getValue());
+		  sum += connections.get(i).getInputNeuron().getNeuralValue()*connections.get(i).getWeight().getValue(); 
 	   }
-	   for(int i=0;i<input.size();i++) {//calculate input of sigmoid function: WX + b
-		   sum += weights.get(i)*input.get(i);
-	   }
-	   //System.out.println("sum = "+sum);
-	   return sigmoid(sum);
+	   setNeuralValue(sigmoid(sum));
   }
 
 

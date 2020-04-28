@@ -1,4 +1,5 @@
 import java.util.*;
+
 //import nnmodel.*;
 import nnmodel2.*;
 
@@ -6,8 +7,20 @@ public class Controller {
 
 	public static void main(String[] args) {
 		
-		NeuralNetwork example = new NeuralNetwork(3,3);
+		NeuralNetwork example = new NeuralNetwork(2,2);
 		printNN(example);
+		List<Double> input = new ArrayList<Double>();
+		input.add(2.0);
+		input.add(2.0);
+		List<Double> output = new ArrayList<Double>();
+		try {
+			output = forwardPropagation(example,input);
+		} catch (InvalidPropertiesFormatException e) {
+			e.printStackTrace();
+		}
+		for(int i=0;i<output.size();i++) {
+			System.out.println("output "+i+": "+output.get(i));
+		}
 	}
 	
 	private static void printNN(NeuralNetwork example) {
@@ -22,12 +35,30 @@ public class Controller {
 		}
 	}
 	
-	private static List<Double> forwardPropagation(NeuralNetwork nn, List<Double> input) {
+	private static List<Double> forwardPropagation(NeuralNetwork nn, List<Double> input) throws InvalidPropertiesFormatException {
 		List<Double> output = new ArrayList<Double>();
 		
+		if(input.size()!=nn.getLayer(0).numberOfNeurons()) {
+			throw new InvalidPropertiesFormatException("Input size does not match network input size");
+		}
+		for(int i=0;i<input.size();i++) {
+			nn.getLayer(0).getNeuron(i).setNeuralValue(input.get(i));
+		}
+		//Input loaded
 		
+		for(int l=1;l<nn.numberOfLayers();l++) {//for each layer
+			for(int n=0;n<nn.getLayer(l).numberOfNeurons();n++) {//for each neuron in the layer
+				nn.getLayer(l).getNeuron(n).processInputs();
+			}
+		}
+		//calculations are done. Retrieve output.
+		int lastLayer = nn.getLayer((nn.numberOfLayers()-1)).numberOfNeurons();
+		for(int i=0;i<lastLayer;i++) {
+			output.add(nn.getLayer((nn.numberOfLayers()-1)).getNeuron(i).getNeuralValue());
+		}
 		return output;
 	}
+	
 	
 	/*
 	private static void NN1test() {
