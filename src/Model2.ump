@@ -1,0 +1,64 @@
+namespace nnmodel2;
+
+class NeuralNetwork{
+    1 <@>- * Layer layers;
+   public  NeuralNetwork(int numLayers, int nodesPerLayer){
+	   layers = new ArrayList<Layer>();
+	   for(int i=0;i<numLayers;i++) {
+		   addLayer();
+		   for(int j=0;j<nodesPerLayer;j++) {
+			   getLayer(i).addNeuron(0,0);
+		   }
+	   }
+	   //neurons have been created, now to connect them.
+	   Random rng = new Random();
+	   for(int l=0;l<numLayers-1;l++) {
+		   for(int n=0;n<getLayer(l).numberOfNeurons();n++) {//nodes in neural layer
+			   for(int m=0;m<getLayer(l+1).numberOfNeurons();m++) {//nodes in adjacent neural layer
+				   Connection con = new Connection(rng.nextDouble(),getLayer(l).getNeuron(n),getLayer(l+1).getNeuron(m));// randomly initialize weights
+			   }
+		   }
+	   }
+   }
+    
+}
+
+class Neuron{
+	1 inputNeuron -- 0..* Connection outputConnections;
+	1 outputNeuron -- 0..* Connection inputConnections;
+	
+	Double bias;
+	Double neuralValue;
+	
+	private double sigmoid(double input) {
+		  return 1 / (1 + Math.exp(-1*input));
+	}
+	
+	public double process(List<Double> input){
+	   double sum = getBias();
+	   List<Connection> connections = getInputConnections();
+	   List<Double> weights = new ArrayList<Double>();
+	   for(int i=0;i<connections.size();i++) {
+		   weights.add(connections.get(i).getWeight().getValue());
+	   }
+	   for(int i=0;i<input.size();i++) {//calculate input of sigmoid function: WX + b
+		   sum += weights.get(i)*input.get(i);
+	   }
+	   //System.out.println("sum = "+sum);
+	   return sigmoid(sum);
+  	}
+}
+
+class Layer{
+    1 -- 1..* Neuron;
+
+}
+
+class Connection{
+    1 -- 1 Weight;
+
+}
+
+class Weight{
+	Double value;
+}

@@ -1,11 +1,36 @@
 import java.util.*;
-import nnmodel.*;
+//import nnmodel.*;
+import nnmodel2.*;
 
 public class Controller {
 
 	public static void main(String[] args) {
 		
-		//gradient descent: w_j = w_j * (step size) * (d_error / d_w_j) for all j
+		NeuralNetwork example = new NeuralNetwork(3,3);
+		printNN(example);
+	}
+	
+	private static void printNN(NeuralNetwork example) {
+		for(int i=0;i<example.numberOfLayers();i++) {
+			System.out.println("Layer "+i+": "+example.getLayer(i).numberOfNeurons()+" neurons");
+			for(int j=0;j<example.getLayer(i).numberOfNeurons();j++) {
+				System.out.println("Connections out of neuron "+j+": "+example.getLayer(i).getNeuron(j).numberOfOutputConnections());
+				for(int c=0;c<example.getLayer(i).getNeuron(j).numberOfOutputConnections();c++) {
+					System.out.println("Weight: "+example.getLayer(i).getNeuron(j).getOutputConnection(c).getWeight().getValue());
+				}
+			}
+		}
+	}
+	
+	private static List<Double> forwardPropagation(NeuralNetwork nn, List<Double> input) {
+		List<Double> output = new ArrayList<Double>();
+		
+		
+		return output;
+	}
+	
+	/*
+	private static void NN1test() {
 		int inputSize = 3;
 		double[] input = {1,1,1};
 		List<Double> inputList = new ArrayList<Double>();
@@ -29,50 +54,6 @@ public class Controller {
 			}
 		}
 		forwardPropagation(test,inputList);
-		
-	/*	int inputSize = 5;
-		layers = new ArrayList<Layer>();
-		int[] layerSize = {4,6,3};
-		
-		for(int i=0;i<3;i++) {
-			layers.add(new Layer());
-			for(int j=0;j<layerSize[i];j++) {
-				Node generate = new Node(j+1,layers.get(i));
-			}
-		}
-
-		List<Double> inputs = new ArrayList<Double>();
-		for(int i=0;i<inputSize;i++) {
-			inputs.add((double) i+1);
-			System.out.println(inputs.get(i));
-			//inputs.add(2.0);
-		}
-
-		System.out.println("number of inputs: "+inputs.size());
-
-		
-		System.out.println("------------------");
-		System.out.println("midOne layer size: "+layers.get(0).numberOfNodes());
-		System.out.println("midTwo layer size: "+layers.get(1).numberOfNodes());
-		System.out.println("last layer size: "+layers.get(2).numberOfNodes());
-		System.out.println("number of weights of mid-node: "+mid.getNode(0).numberOfWeights());
-		System.out.println("number of weights of last-node: "+last.getNode(0).numberOfWeights());
-
-		//Now let's try forward propagation.
-		List<Double> outs = new ArrayList<Double>();
-		List<Double> tmp = new ArrayList<Double>();
-		outs = inputs;
-		for(int i=0;i<layers.size();i++) {//iterate through layer
-			tmp=outs;
-			outs.clear();
-			for(int n=0;n<layers.get(i).numberOfNodes();n++) {
-				outs.add(layers.get(i).getNode(n).process(tmp));
-			}
-		}
-		System.out.println("Results of forward propagation:");
-		for(int i=0;i<outs.size();i++) {
-			System.out.println(outs.get(i));
-		}*/
 	}
 	
 	private static NeuralNetwork initializeRecNetwork(int layers, int nodesPerLayer, int inputsize) {
@@ -114,5 +95,5 @@ public class Controller {
 			System.out.println("output "+i+" = "+outs.get(i));
 		}
 	}
-
+*/
 }
