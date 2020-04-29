@@ -142,17 +142,28 @@ public class NeuralNetwork
   }
 
   // line 6 "../Model2.ump"
-   public  NeuralNetwork(int numLayers, int nodesPerLayer){
+   public  NeuralNetwork(int numHiddenLayers, int nodesPerLayer, int numInputs, int numOutputs){
     layers = new ArrayList<Layer>();
-	   for(int i=0;i<numLayers;i++) {
+    	//build input layer
+    	addLayer();
+    	for(int i=0;i<numInputs;i++) {
+    		getLayer(0).addNeuron(0, 0);
+    	}
+    	//build hidden layers
+	   for(int i=1;i<=numHiddenLayers;i++) {
 		   addLayer();
 		   for(int j=0;j<nodesPerLayer;j++) {
 			   getLayer(i).addNeuron(0,0);
 		   }
 	   }
+	   //build output layer
+	   addLayer();
+	   for(int i=0;i<numOutputs;i++) {
+		   getLayer(1+numHiddenLayers).addNeuron(0, 0);
+	   }
 	   //neurons have been created, now to connect them.
 	   Random rng = new Random();
-	   for(int l=0;l<numLayers-1;l++) {
+	   for(int l=0;l<numHiddenLayers+1;l++) {
 		   for(int n=0;n<getLayer(l).numberOfNeurons();n++) {//nodes in neural layer
 			   for(int m=0;m<getLayer(l+1).numberOfNeurons();m++) {//nodes in adjacent neural layer
 				   Connection con = new Connection(rng.nextDouble(),getLayer(l).getNeuron(n),getLayer(l+1).getNeuron(m));// randomly initialize weights

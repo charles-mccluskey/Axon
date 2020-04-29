@@ -7,7 +7,7 @@ public class Controller {
 
 	public static void main(String[] args) {
 		
-		NeuralNetwork example = new NeuralNetwork(2,2);
+		NeuralNetwork example = new NeuralNetwork(3,3,2,2);
 		printNN(example);
 		List<Double> input = new ArrayList<Double>();
 		input.add(2.0);
