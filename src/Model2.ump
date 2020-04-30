@@ -1,8 +1,10 @@
 namespace nnmodel2;
 
+use Persistence.ump;
+
 class NeuralNetwork{
     1 <@>- * Layer layers;
-   public  NeuralNetwork(int numHiddenLayers, int nodesPerLayer, int numInputs, int numOutputs){
+   public  NeuralNetwork(int numInputs, int numHiddenLayers, int nodesPerLayer, int numOutputs){
     layers = new ArrayList<Layer>();
     	//build input layer
     	addLayer();
@@ -23,7 +25,7 @@ class NeuralNetwork{
 	   }
 	   //neurons have been created, now to connect them.
 	   Random rng = new Random();
-	   for(int l=0;l<numHiddenLayers-1;l++) {
+	   for(int l=0;l<=numHiddenLayers;l++) {
 		   for(int n=0;n<getLayer(l).numberOfNeurons();n++) {//nodes in neural layer
 			   for(int m=0;m<getLayer(l+1).numberOfNeurons();m++) {//nodes in adjacent neural layer
 				   Connection con = new Connection(rng.nextDouble(),getLayer(l).getNeuron(n),getLayer(l+1).getNeuron(m));// randomly initialize weights
@@ -39,7 +41,7 @@ class Neuron{
 	1 outputNeuron -- 0..* Connection inputConnections;
 	
 	Double bias;
-	Double neuralValue;
+	Double activation;
 	
 	private double sigmoid(double input) {
 		  return 1 / (1 + Math.exp(-1*input));
@@ -50,9 +52,9 @@ class Neuron{
 	   List<Connection> connections = getInputConnections();
 	   List<Double> weights = new ArrayList<Double>();
 	   for(int i=0;i<connections.size();i++) {
-		  sum += connections.get(i).getInputNeuron().getNeuralValue()*connections.get(i).getWeight().getValue(); 
+		  sum += connections.get(i).getInputNeuron().getActivation()*connections.get(i).getWeight().getValue(); 
 	   }
-	   setNeuralValue(sigmoid(sum));
+	   setActivation(sigmoid(sum));
   }
 }
 

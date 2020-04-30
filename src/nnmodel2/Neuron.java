@@ -2,10 +2,12 @@
 /*This code was generated using the UMPLE 1.29.0.4181.a593105a9 modeling language!*/
 
 package nnmodel2;
+import java.io.Serializable;
 import java.util.*;
 
-// line 26 "../Model2.ump"
-public class Neuron
+// line 18 "../Persistence.ump"
+// line 39 "../Model2.ump"
+public class Neuron implements Serializable
 {
 
   //------------------------
@@ -14,7 +16,7 @@ public class Neuron
 
   //Neuron Attributes
   private double bias;
-  private double neuralValue;
+  private double activation;
 
   //Neuron Associations
   private List<Connection> outputConnections;
@@ -25,10 +27,10 @@ public class Neuron
   // CONSTRUCTOR
   //------------------------
 
-  public Neuron(double aBias, double aNeuralValue, Layer aLayer)
+  public Neuron(double aBias, double aActivation, Layer aLayer)
   {
     bias = aBias;
-    neuralValue = aNeuralValue;
+    activation = aActivation;
     outputConnections = new ArrayList<Connection>();
     inputConnections = new ArrayList<Connection>();
     boolean didAddLayer = setLayer(aLayer);
@@ -50,10 +52,10 @@ public class Neuron
     return wasSet;
   }
 
-  public boolean setNeuralValue(double aNeuralValue)
+  public boolean setActivation(double aActivation)
   {
     boolean wasSet = false;
-    neuralValue = aNeuralValue;
+    activation = aActivation;
     wasSet = true;
     return wasSet;
   }
@@ -63,9 +65,9 @@ public class Neuron
     return bias;
   }
 
-  public double getNeuralValue()
+  public double getActivation()
   {
-    return neuralValue;
+    return activation;
   }
   /* Code from template association_GetMany */
   public Connection getOutputConnection(int index)
@@ -327,20 +329,20 @@ public class Neuron
     }
   }
 
-  // line 34 "../Model2.ump"
+  // line 47 "../Model2.ump"
    private double sigmoid(double input){
     return 1 / (1 + Math.exp(-1*input));
   }
 
-  // line 38 "../Model2.ump"
+  // line 51 "../Model2.ump"
    public void processInputs(){
-	   double sum = getBias();
+    double sum = getBias();
 	   List<Connection> connections = getInputConnections();
 	   List<Double> weights = new ArrayList<Double>();
 	   for(int i=0;i<connections.size();i++) {
-		  sum += connections.get(i).getInputNeuron().getNeuralValue()*connections.get(i).getWeight().getValue(); 
+		  sum += connections.get(i).getInputNeuron().getActivation()*connections.get(i).getWeight().getValue(); 
 	   }
-	   setNeuralValue(sigmoid(sum));
+	   setActivation(sigmoid(sum));
   }
 
 
@@ -348,7 +350,15 @@ public class Neuron
   {
     return super.toString() + "["+
             "bias" + ":" + getBias()+ "," +
-            "neuralValue" + ":" + getNeuralValue()+ "]" + System.getProperties().getProperty("line.separator") +
+            "activation" + ":" + getActivation()+ "]" + System.getProperties().getProperty("line.separator") +
             "  " + "layer = "+(getLayer()!=null?Integer.toHexString(System.identityHashCode(getLayer())):"null");
-  }
+  }  
+  //------------------------
+  // DEVELOPER CODE - PROVIDED AS-IS
+  //------------------------
+  
+  // line 21 "../Persistence.ump"
+  private static final long serialVersionUID = 3389752283403781197L ;
+
+  
 }

@@ -1,0 +1,37 @@
+external interface Serializable {}
+namespace nnmodel2;
+
+class NeuralNetwork{
+  depend java.io.Serializable;
+  isA Serializable;
+  private static final long serialVersionUID = 6181302407834705923L;
+  
+}
+
+class Connection{
+  depend java.io.Serializable;
+  isA Serializable;
+  private static final long serialVersionUID = 4267485601061759914L;
+  
+}
+
+class Neuron{
+  depend java.io.Serializable;
+  isA Serializable;
+  private static final long serialVersionUID = 3389752283403781197L;
+  
+}
+
+class Layer{
+  depend java.io.Serializable;
+  isA Serializable;
+  private static final long serialVersionUID = 1959250384912895829L;
+  
+}
+
+class Weight{
+  depend java.io.Serializable;
+  isA Serializable;
+  private static final long serialVersionUID = 4495546738870249064L;
+  
+}

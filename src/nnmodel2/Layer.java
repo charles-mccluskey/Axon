@@ -2,10 +2,12 @@
 /*This code was generated using the UMPLE 1.29.0.4181.a593105a9 modeling language!*/
 
 package nnmodel2;
+import java.io.Serializable;
 import java.util.*;
 
-// line 52 "../Model2.ump"
-public class Layer
+// line 25 "../Persistence.ump"
+// line 61 "../Model2.ump"
+public class Layer implements Serializable
 {
 
   //------------------------
@@ -80,9 +82,9 @@ public class Layer
     return 1;
   }
   /* Code from template association_AddMandatoryManyToOne */
-  public Neuron addNeuron(double aBias, double aNeuralValue)
+  public Neuron addNeuron(double aBias, double aActivation)
   {
-    Neuron aNewNeuron = new Neuron(aBias, aNeuralValue, this);
+    Neuron aNewNeuron = new Neuron(aBias, aActivation, this);
     return aNewNeuron;
   }
 
@@ -194,5 +196,13 @@ public class Layer
       placeholderNeuralNetwork.removeLayer(this);
     }
   }
+  
+  //------------------------
+  // DEVELOPER CODE - PROVIDED AS-IS
+  //------------------------
+  
+  // line 28 "../Persistence.ump"
+  private static final long serialVersionUID = 1959250384912895829L ;
 
+  
 }

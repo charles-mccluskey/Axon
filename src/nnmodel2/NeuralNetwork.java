@@ -2,10 +2,12 @@
 /*This code was generated using the UMPLE 1.29.0.4181.a593105a9 modeling language!*/
 
 package nnmodel2;
+import java.io.Serializable;
 import java.util.*;
 
-// line 3 "../Model2.ump"
-public class NeuralNetwork
+// line 4 "../Persistence.ump"
+// line 5 "../Model2.ump"
+public class NeuralNetwork implements Serializable
 {
 
   //------------------------
@@ -141,8 +143,8 @@ public class NeuralNetwork
     
   }
 
-  // line 6 "../Model2.ump"
-   public  NeuralNetwork(int numHiddenLayers, int nodesPerLayer, int numInputs, int numOutputs){
+  // line 8 "../Model2.ump"
+   public  NeuralNetwork(int numInputs, int numHiddenLayers, int nodesPerLayer, int numOutputs){
     layers = new ArrayList<Layer>();
     	//build input layer
     	addLayer();
@@ -163,7 +165,7 @@ public class NeuralNetwork
 	   }
 	   //neurons have been created, now to connect them.
 	   Random rng = new Random();
-	   for(int l=0;l<numHiddenLayers+1;l++) {
+	   for(int l=0;l<=numHiddenLayers;l++) {
 		   for(int n=0;n<getLayer(l).numberOfNeurons();n++) {//nodes in neural layer
 			   for(int m=0;m<getLayer(l+1).numberOfNeurons();m++) {//nodes in adjacent neural layer
 				   Connection con = new Connection(rng.nextDouble(),getLayer(l).getNeuron(n),getLayer(l+1).getNeuron(m));// randomly initialize weights
@@ -171,5 +173,13 @@ public class NeuralNetwork
 		   }
 	   }
   }
+  
+  //------------------------
+  // DEVELOPER CODE - PROVIDED AS-IS
+  //------------------------
+  
+  // line 7 "../Persistence.ump"
+  private static final long serialVersionUID = 6181302407834705923L ;
 
+  
 }

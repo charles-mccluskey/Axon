@@ -2,9 +2,11 @@
 /*This code was generated using the UMPLE 1.29.0.4181.a593105a9 modeling language!*/
 
 package nnmodel2;
+import java.io.Serializable;
 
-// line 62 "../Model2.ump"
-public class Weight
+// line 32 "../Persistence.ump"
+// line 71 "../Model2.ump"
+public class Weight implements Serializable
 {
 
   //------------------------
@@ -75,5 +77,13 @@ public class Weight
     return super.toString() + "["+
             "value" + ":" + getValue()+ "]" + System.getProperties().getProperty("line.separator") +
             "  " + "connection = "+(getConnection()!=null?Integer.toHexString(System.identityHashCode(getConnection())):"null");
-  }
+  }  
+  //------------------------
+  // DEVELOPER CODE - PROVIDED AS-IS
+  //------------------------
+  
+  // line 35 "../Persistence.ump"
+  private static final long serialVersionUID = 4495546738870249064L ;
+
+  
 }

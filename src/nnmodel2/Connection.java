@@ -2,9 +2,11 @@
 /*This code was generated using the UMPLE 1.29.0.4181.a593105a9 modeling language!*/
 
 package nnmodel2;
+import java.io.Serializable;
 
-// line 57 "../Model2.ump"
-public class Connection
+// line 11 "../Persistence.ump"
+// line 66 "../Model2.ump"
+public class Connection implements Serializable
 {
 
   //------------------------
@@ -132,5 +134,13 @@ public class Connection
       placeholderOutputNeuron.removeInputConnection(this);
     }
   }
+  
+  //------------------------
+  // DEVELOPER CODE - PROVIDED AS-IS
+  //------------------------
+  
+  // line 14 "../Persistence.ump"
+  private static final long serialVersionUID = 4267485601061759914L ;
 
+  
 }

@@ -1,26 +1,46 @@
 import java.util.*;
-
-//import nnmodel.*;
+import java.io.*;
 import nnmodel2.*;
 
 public class Controller {
 
 	public static void main(String[] args) {
 		
-		NeuralNetwork example = new NeuralNetwork(3,3,2,2);
+		/*NeuralNetwork example = new NeuralNetwork(2,3,3,4);
 		printNN(example);
-		List<Double> input = new ArrayList<Double>();
-		input.add(2.0);
-		input.add(2.0);
-		List<Double> output = new ArrayList<Double>();
+		NNPersistence.save(example);*/
+		
+		NeuralNetwork example = NNPersistence.load();
+		printNN(example);
+		/*	
+		File currentDir = new File("");
+		String path = currentDir.getAbsolutePath();
+		String filePath = path+"/trainingData.txt";
+		List<Integer> xVals = new ArrayList<Integer>();
+		List<Integer> yVals = new ArrayList<Integer>();
+		List<Integer> quadrants = new ArrayList<Integer>();
 		try {
-			output = forwardPropagation(example,input);
-		} catch (InvalidPropertiesFormatException e) {
+			BufferedReader reader = new BufferedReader (new FileReader(filePath));
+
+			List<String[]> lines = new ArrayList<String[]>();
+			String line = reader.readLine();
+			while(line != null) {
+				lines.add(line.split(";"));
+			}
+			for(int i=0;i<lines.size();i++) {
+				xVals.add(Integer.parseInt(lines.get(i)[0]));
+				yVals.add(Integer.parseInt(lines.get(i)[1]));
+				quadrants.add(Integer.parseInt(lines.get(i)[2]));
+			}
+		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-		}
-		for(int i=0;i<output.size();i++) {
-			System.out.println("output "+i+": "+output.get(i));
-		}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
+		//training set has been retrieved in the form of 3 lists
+		
+		
 	}
 	
 	private static void printNN(NeuralNetwork example) {
@@ -42,7 +62,7 @@ public class Controller {
 			throw new InvalidPropertiesFormatException("Input size does not match network input size");
 		}
 		for(int i=0;i<input.size();i++) {
-			nn.getLayer(0).getNeuron(i).setNeuralValue(input.get(i));
+			nn.getLayer(0).getNeuron(i).setActivation(input.get(i));
 		}
 		//Input loaded
 		
@@ -54,77 +74,13 @@ public class Controller {
 		//calculations are done. Retrieve output.
 		int lastLayer = nn.getLayer((nn.numberOfLayers()-1)).numberOfNeurons();
 		for(int i=0;i<lastLayer;i++) {
-			output.add(nn.getLayer((nn.numberOfLayers()-1)).getNeuron(i).getNeuralValue());
+			output.add(nn.getLayer((nn.numberOfLayers()-1)).getNeuron(i).getActivation());
 		}
 		return output;
 	}
 	
-	
-	/*
-	private static void NN1test() {
-		int inputSize = 3;
-		double[] input = {1,1,1};
-		List<Double> inputList = new ArrayList<Double>();
-		for(int i=0;i<input.length;i++) {
-			inputList.add(input[i]);
-		}
+	private static void backPropagation() {
 		
-		NeuralNetwork test = new NeuralNetwork();
-		test.addLayer();
-		test.addLayer();
-		test.getLayer(0).addNode(0);
-		test.getLayer(0).addNode(0);
-		test.getLayer(1).addNode(0);
-		for(int i=0;i<test.numberOfLayers();i++) {
-			for(int j=0;j<test.getLayer(i).numberOfNodes();j++) {
-				if(i!=0) {//if it's not the input layer...
-					test.getLayer(i).getNode(j).initializeWeights((test.getLayer(i-1).numberOfNodes()));
-				}else {//if it's the input layer
-					test.getLayer(i).getNode(j).initializeWeights(inputList.size());
-				}
-			}
-		}
-		forwardPropagation(test,inputList);
 	}
 	
-	private static NeuralNetwork initializeRecNetwork(int layers, int nodesPerLayer, int inputsize) {
-		NeuralNetwork network = new NeuralNetwork();
-		
-		for(int i=0;i<layers;i++) {
-			network.addLayer();
-			for(int j=0;j<nodesPerLayer;j++) {
-				network.getLayer(i).addNode(0);
-			}
-		}
-		
-		for(int i=0;i<network.numberOfLayers();i++) {
-			for(int j=0;j<network.getLayer(i).numberOfNodes();j++) {
-				if(i!=0) {//if it's not the input layer...
-					network.getLayer(i).getNode(j).initializeWeights((network.getLayer(i-1).numberOfNodes()));
-				}else {//if it's the input layer
-					network.getLayer(i).getNode(j).initializeWeights(inputsize);
-				}
-			}
-		}
-		
-		return network;
-	}
-	
-	private static void forwardPropagation(NeuralNetwork nn, List<Double> input) {
-		List<Double> outs = new ArrayList<Double>();
-		List<Double> tmp = new ArrayList<Double>();
-		outs = input;
-		for(int i=0;i<nn.numberOfLayers();i++) {//iterate through layer
-			tmp.addAll(outs);
-			outs.clear();
-			for(int n=0;n<nn.getLayer(i).numberOfNodes();n++) {
-				outs.add(nn.getLayer(i).getNode(n).process(tmp));
-			}
-			tmp.clear();
-		}
-		for(int i=0;i<outs.size();i++) {
-			System.out.println("output "+i+" = "+outs.get(i));
-		}
-	}
-*/
 }
