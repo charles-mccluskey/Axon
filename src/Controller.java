@@ -6,11 +6,13 @@ public class Controller {
 
 	public static void main(String[] args) {
 		
-		/*NeuralNetwork example = new NeuralNetwork(2,3,3,4);
-		printNN(example);
-		NNPersistence.save(example);*/
-		
-		NeuralNetwork example = NNPersistence.load();
+		NeuralNetwork example;
+		try {
+			example = NNPersistence.load();
+			System.out.println();
+		} catch (FileNotFoundException e) {
+			example = new NeuralNetwork(2,3,3,4);
+		}
 		printNN(example);
 		/*	
 		File currentDir = new File("");

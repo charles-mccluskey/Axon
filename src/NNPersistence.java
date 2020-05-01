@@ -1,3 +1,5 @@
+import java.io.FileNotFoundException;
+
 import nnmodel2.*;
 
 public class NNPersistence {
@@ -7,15 +9,12 @@ public class NNPersistence {
 		PersistenceObjectStream.serialize(nn);
 	}
 	
-	public static NeuralNetwork load() {
+	public static NeuralNetwork load() throws FileNotFoundException{
 		PersistenceObjectStream.setFilename(filename);
 		NeuralNetwork nn = (NeuralNetwork) PersistenceObjectStream.deserialize();
-		/*if (nn == null) {//If it can't be loaded for whatever reason
-			nn = new Block223(); //then a new Block223 needs to be created.
+		if (nn == null) {//If it can't be loaded for whatever reason
+			throw new FileNotFoundException();
 		}
-		else {
-			block223.reinitialize();
-		}*/
 		return nn;
 	}
 	
