@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.*;
 
 // line 18 "../Persistence.ump"
-// line 39 "../Model2.ump"
+// line 40 "../Model2.ump"
 public class Neuron implements Serializable
 {
 
@@ -17,6 +17,7 @@ public class Neuron implements Serializable
   //Neuron Attributes
   private double bias;
   private double activation;
+  private double error;
 
   //Neuron Associations
   private List<Connection> outputConnections;
@@ -27,10 +28,11 @@ public class Neuron implements Serializable
   // CONSTRUCTOR
   //------------------------
 
-  public Neuron(double aBias, double aActivation, Layer aLayer)
+  public Neuron(double aBias, double aActivation, double aError, Layer aLayer)
   {
     bias = aBias;
     activation = aActivation;
+    error = aError;
     outputConnections = new ArrayList<Connection>();
     inputConnections = new ArrayList<Connection>();
     boolean didAddLayer = setLayer(aLayer);
@@ -60,6 +62,14 @@ public class Neuron implements Serializable
     return wasSet;
   }
 
+  public boolean setError(double aError)
+  {
+    boolean wasSet = false;
+    error = aError;
+    wasSet = true;
+    return wasSet;
+  }
+
   public double getBias()
   {
     return bias;
@@ -68,6 +78,11 @@ public class Neuron implements Serializable
   public double getActivation()
   {
     return activation;
+  }
+
+  public double getError()
+  {
+    return error;
   }
   /* Code from template association_GetMany */
   public Connection getOutputConnection(int index)
@@ -329,28 +344,53 @@ public class Neuron implements Serializable
     }
   }
 
-  // line 47 "../Model2.ump"
+  // line 49 "../Model2.ump"
    private double sigmoid(double input){
     return 1 / (1 + Math.exp(-1*input));
   }
 
-  // line 51 "../Model2.ump"
+  // line 53 "../Model2.ump"
+   public double sigPrime(double input){
+    return sigmoid(input) + (1- sigmoid(input));
+  }
+
+  // line 57 "../Model2.ump"
    public void processInputs(){
     double sum = getBias();
-	   List<Connection> connections = getInputConnections();
-	   List<Double> weights = new ArrayList<Double>();
-	   for(int i=0;i<connections.size();i++) {
-		  sum += connections.get(i).getInputNeuron().getActivation()*connections.get(i).getWeight().getValue(); 
-	   }
-	   setActivation(sigmoid(sum));
+		List<Connection> connections = getInputConnections();
+		for(int i=0;i<connections.size();i++) {
+			sum += connections.get(i).getInputNeuron().getActivation()*connections.get(i).getWeight().getValue(); 
+		}
+		setActivation(sigmoid(sum));
   }
+
+  // line 66 "../Model2.ump"
+   public double getInput(){
+    double sum = getBias();
+	   List<Connection> connections = getInputConnections();
+	   for(int i=0;i<connections.size();i++) {
+		   sum += connections.get(i).getInputNeuron().getActivation()*connections.get(i).getWeight().getValue(); 
+	   }
+	   return sum;
+  }
+   
+   public double sumErrors() {
+	   double sum = 0;
+	   for(int i=0;i<numberOfOutputConnections();i++) {
+		   sum += getOutputConnection(i).getOutputNeuron().getError()
+				   * getOutputConnection(i).getWeight().getValue()
+				   * sigPrime(getOutputConnection(i).getOutputNeuron().getInput());
+	   }
+	   return sum;
+   }
 
 
   public String toString()
   {
     return super.toString() + "["+
             "bias" + ":" + getBias()+ "," +
-            "activation" + ":" + getActivation()+ "]" + System.getProperties().getProperty("line.separator") +
+            "activation" + ":" + getActivation()+ "," +
+            "error" + ":" + getError()+ "]" + System.getProperties().getProperty("line.separator") +
             "  " + "layer = "+(getLayer()!=null?Integer.toHexString(System.identityHashCode(getLayer())):"null");
   }  
   //------------------------

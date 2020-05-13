@@ -7,13 +7,15 @@ public class Controller {
 	public static void main(String[] args) {
 		
 		NeuralNetwork example;
+		NNPersistence.setFilename("NN.AxonNetwork");
 		try {
 			example = NNPersistence.load();
 			System.out.println();
 		} catch (FileNotFoundException e) {
-			example = new NeuralNetwork(2,3,3,4);
+			example = new NeuralNetwork(2,3,3,4,0.1);
 		}
 		printNN(example);
+		NNPersistence.save(example);
 		/*	
 		File currentDir = new File("");
 		String path = currentDir.getAbsolutePath();
@@ -81,8 +83,37 @@ public class Controller {
 		return output;
 	}
 	
-	private static void backPropagation() {
-		
-	}
-	
+	//sigmoid derivative: s`(x) = s(x) + (1 - s(x))
+	private static void backPropagation(NeuralNetwork nn, List<Double> testOutputs) {
+		//calculate output error:
+		for(int i=0;i<nn.getLayer((nn.numberOfLayers()-1)).numberOfNeurons();i++) {
+			double output = nn.getLayer((nn.numberOfLayers()-1)).getNeuron(i).getActivation();
+			nn.getLayer((nn.numberOfLayers()-1)).getNeuron(i).setError(output - testOutputs.get(i));//simple cost function
+		}
+		//output layer cost has been set. Now go backwards through the network
+		for(int l=(nn.numberOfLayers()-1);l>0;l--) {//iterate backwards through the layers
+			for(int n=0;n<nn.getLayer(l).numberOfNeurons();n++) {//iterate through the neurons
+				for(int c=0;c<nn.getLayer(l).getNeuron(n).numberOfInputConnections();c++) {//iterate through input connections of current node
+					
+					nn.getLayer(l).getNeuron(n).getInputConnection(c).getWeight().setChange(
+							nn.getLayer(l).getNeuron(n).sigPrime(
+									nn.getLayer(l).getNeuron(n).getInput())
+							* nn.getLayer(l).getNeuron(n).getInputConnection(c).getInputNeuron().getActivation()
+							* nn.getLayer(l).getNeuron(n).sumErrors()
+						);
+				}
+			}
+		}
+		//change has been calculated for all weights (NOT BIASES)
+		//update all weights to reflect the changes
+		for(int l=(nn.numberOfLayers()-1);l>0;l--) {//iterate backwards through the layers
+			for(int n=0;n<nn.getLayer(l).numberOfNeurons();n++) {//iterate through the neurons
+				for(int c=0;c<nn.getLayer(l).getNeuron(n).numberOfInputConnections();c++) {//iterate through input connections of current node
+					
+					nn.getLayer(l).getNeuron(n).getInputConnection(c).updateWeight();
+					
+				}
+			}
+		}
+	}	
 }

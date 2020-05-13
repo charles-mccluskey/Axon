@@ -5,7 +5,7 @@ package nnmodel2;
 import java.io.Serializable;
 
 // line 11 "../Persistence.ump"
-// line 66 "../Model2.ump"
+// line 80 "../Model2.ump"
 public class Connection implements Serializable
 {
 
@@ -41,9 +41,9 @@ public class Connection implements Serializable
     }
   }
 
-  public Connection(double aValueForWeight, Neuron aInputNeuron, Neuron aOutputNeuron)
+  public Connection(double aValueForWeight, double aChangeForWeight, Neuron aInputNeuron, Neuron aOutputNeuron)
   {
-    weight = new Weight(aValueForWeight, this);
+    weight = new Weight(aValueForWeight, aChangeForWeight, this);
     boolean didAddInputNeuron = setInputNeuron(aInputNeuron);
     if (!didAddInputNeuron)
     {
@@ -143,4 +143,8 @@ public class Connection implements Serializable
   private static final long serialVersionUID = 4267485601061759914L ;
 
   
+  	public void updateWeight() {
+  		weight.setValue(weight.getValue()+weight.getChange());
+  		weight.setChange(0);
+  	}
 }

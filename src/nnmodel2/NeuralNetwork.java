@@ -14,6 +14,9 @@ public class NeuralNetwork implements Serializable
   // MEMBER VARIABLES
   //------------------------
 
+  //NeuralNetwork Attributes
+  private double learningRate;
+
   //NeuralNetwork Associations
   private List<Layer> layers;
 
@@ -21,14 +24,28 @@ public class NeuralNetwork implements Serializable
   // CONSTRUCTOR
   //------------------------
 
-  public NeuralNetwork()
+  public NeuralNetwork(double aLearningRate)
   {
+    learningRate = aLearningRate;
     layers = new ArrayList<Layer>();
   }
 
   //------------------------
   // INTERFACE
   //------------------------
+
+  public boolean setLearningRate(double aLearningRate)
+  {
+    boolean wasSet = false;
+    learningRate = aLearningRate;
+    wasSet = true;
+    return wasSet;
+  }
+
+  public double getLearningRate()
+  {
+    return learningRate;
+  }
   /* Code from template association_GetMany */
   public Layer getLayer(int index)
   {
@@ -143,37 +160,44 @@ public class NeuralNetwork implements Serializable
     
   }
 
-  // line 8 "../Model2.ump"
-   public  NeuralNetwork(int numInputs, int numHiddenLayers, int nodesPerLayer, int numOutputs){
-    layers = new ArrayList<Layer>();
+  // line 9 "../Model2.ump"
+   public  NeuralNetwork(int numInputs, int numHiddenLayers, int nodesPerLayer, int numOutputs, double learningRate){
+    Random rng = new Random();
+	   	layers = new ArrayList<Layer>();
     	//build input layer
     	addLayer();
     	for(int i=0;i<numInputs;i++) {
-    		getLayer(0).addNeuron(0, 0);
+    		getLayer(0).addNeuron(rng.nextDouble(), 0, 0);
     	}
     	//build hidden layers
-	   for(int i=1;i<=numHiddenLayers;i++) {
-		   addLayer();
-		   for(int j=0;j<nodesPerLayer;j++) {
-			   getLayer(i).addNeuron(0,0);
-		   }
-	   }
-	   //build output layer
-	   addLayer();
-	   for(int i=0;i<numOutputs;i++) {
-		   getLayer(1+numHiddenLayers).addNeuron(0, 0);
-	   }
-	   //neurons have been created, now to connect them.
-	   Random rng = new Random();
-	   for(int l=0;l<=numHiddenLayers;l++) {
-		   for(int n=0;n<getLayer(l).numberOfNeurons();n++) {//nodes in neural layer
-			   for(int m=0;m<getLayer(l+1).numberOfNeurons();m++) {//nodes in adjacent neural layer
-				   Connection con = new Connection(rng.nextDouble(),getLayer(l).getNeuron(n),getLayer(l+1).getNeuron(m));// randomly initialize weights
-			   }
-		   }
-	   }
+    	for(int i=1;i<=numHiddenLayers;i++) {
+    		addLayer();
+    		for(int j=0;j<nodesPerLayer;j++) {
+    			getLayer(i).addNeuron(rng.nextDouble(), 0, 0);
+    		}
+    	}
+    	//build output layer
+    	addLayer();
+    	for(int i=0;i<numOutputs;i++) {
+    		getLayer(1+numHiddenLayers).addNeuron(rng.nextDouble(), 0, 0);
+    	}
+    	//neurons have been created, now to connect them.
+    	for(int l=0;l<=numHiddenLayers;l++) {
+    		for(int n=0;n<getLayer(l).numberOfNeurons();n++) {//nodes in neural layer
+    			for(int m=0;m<getLayer(l+1).numberOfNeurons();m++) {//nodes in adjacent neural layer
+    				Connection con = new Connection(rng.nextDouble(),0,getLayer(l).getNeuron(n),getLayer(l+1).getNeuron(m));// randomly initialize weights
+    			}
+    		}
+    	}
+    	setLearningRate(learningRate);
   }
-  
+
+
+  public String toString()
+  {
+    return super.toString() + "["+
+            "learningRate" + ":" + getLearningRate()+ "]";
+  }  
   //------------------------
   // DEVELOPER CODE - PROVIDED AS-IS
   //------------------------
