@@ -382,7 +382,7 @@ public class Neuron implements Serializable
 
   // line 47 "../ExtraCode.ump"
    private double sigPrime(double input){
-    return sigmoid(input) + (1- sigmoid(input));
+    return sigmoid(input) * (1- sigmoid(input));
   }
 
   // line 51 "../ExtraCode.ump"

@@ -19,7 +19,7 @@ public class NNPersistence {
 	}
 	
 	public static void setFilename(String newFilename) {
-		filename = newFilename;
+		filename = newFilename+".AxonNetwork";
 		PersistenceObjectStream.setFilename(newFilename);
 	}
 }

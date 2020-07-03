@@ -6,13 +6,14 @@ public class Controller {
 
 	public static void main(String[] args) {
 
-		simpleTest();
-		
+		//simpleTest();
+		//quadrantTestTraining();
+		quadrantTest();
 	}
 	
 	private static void simpleTest() {
 		NeuralNetwork example;
-		NNPersistence.setFilename("SimpleTest.AxonNetwork");
+		NNPersistence.setFilename("SimpleTest");
 		try {
 			example = NNPersistence.load();
 		} catch (FileNotFoundException e) {
@@ -53,12 +54,67 @@ public class Controller {
 	}
 	
 	private static void quadrantTest() {
-		
 		NeuralNetwork example;
-		NNPersistence.setFilename("NN.AxonNetwork");
+		NNPersistence.setFilename("NN");
 		try {
 			example = NNPersistence.load();
-			System.out.println();
+		} catch (FileNotFoundException e) {
+			example = new NeuralNetwork(2,3,4,4,0.1);
+		}
+		
+		File currentDir = new File("");
+		String path = currentDir.getAbsolutePath();
+		String filePath = path+"/trainingData.txt";
+		List<Integer> xVals = new ArrayList<Integer>();
+		List<Integer> yVals = new ArrayList<Integer>();
+		List<Integer> quadrants = new ArrayList<Integer>();
+		try {
+			BufferedReader reader = new BufferedReader (new FileReader(filePath));
+
+			List<String[]> lines = new ArrayList<String[]>();
+			String line = reader.readLine();
+			while(line != null) {
+				lines.add(line.split(";"));
+				line = reader.readLine();
+			}
+			for(int i=0;i<lines.size();i++) {
+				xVals.add(Integer.parseInt(lines.get(i)[0]));
+				yVals.add(Integer.parseInt(lines.get(i)[1]));
+				quadrants.add(Integer.parseInt(lines.get(i)[2]));
+			}
+			reader.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		//training set has been retrieved in the form of 3 lists
+		
+		List<Double> testInput = new ArrayList<Double>();
+		testInput.add( (double) xVals.get(6));
+		testInput.add( (double) yVals.get(6));
+		List<Double> testOutput = convertQuadrantToList(quadrants,6);
+		//extracted single test case. Ready for test.
+		
+		try {
+			System.out.println("input: "+testInput.get(0)+","+testInput.get(1));
+			List<Double> results = forwardPropagation(example,testInput);
+			System.out.println("\n--------------------------\noutput results:");
+			for(int i=0;i<results.size();i++) {
+				System.out.println(results.get(i));
+			}
+		} catch (InvalidPropertiesFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private static void quadrantTestTraining() {
+		
+		NeuralNetwork example;
+		NNPersistence.setFilename("NN");
+		try {
+			example = NNPersistence.load();
 		} catch (FileNotFoundException e) {
 			example = new NeuralNetwork(2,3,4,4,0.1);
 		}
@@ -85,6 +141,7 @@ public class Controller {
 				yVals.add(Integer.parseInt(lines.get(i)[1]));
 				quadrants.add(Integer.parseInt(lines.get(i)[2]));
 			}
+			reader.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -92,7 +149,7 @@ public class Controller {
 		}
 		//training set has been retrieved in the form of 3 lists
 		
-		/*for(int i=0;i<quadrants.size();i++) {
+		for(int i=0;i<quadrants.size();i++) {
 			List<Double> testInput = new ArrayList<Double>();
 			testInput.add( (double) xVals.get(i));
 			testInput.add( (double) yVals.get(i));
@@ -101,12 +158,11 @@ public class Controller {
 				List<Double> results = forwardPropagation(example,testInput);
 				example = backPropagation(example,testOutput);
 			} catch (InvalidPropertiesFormatException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		NNPersistence.save(example);*/
-		
+		NNPersistence.save(example);
+		/*
 		List<Double> testInput = new ArrayList<Double>();
 		testInput.add( (double) xVals.get(0));
 		testInput.add( (double) yVals.get(0));
@@ -135,7 +191,7 @@ public class Controller {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		*/
 	}
 	
 	private static List<Double> convertQuadrantToList(List<Integer> quadrants,int index){
@@ -168,7 +224,7 @@ public class Controller {
 		for(int i=0;i<example.numberOfLayers();i++) {
 			System.out.println("Layer "+i+": "+example.getLayer(i).numberOfNeurons()+" neurons");
 			for(int j=0;j<example.getLayer(i).numberOfNeurons();j++) {
-				System.out.println("Connections out of neuron "+j+": "+example.getLayer(i).getNeuron(j).numberOfOutputConnections());
+				System.out.println("Connections out of neuron "+j+" with bias "+example.getLayer(i).getNeuron(j).getBias()+": "+example.getLayer(i).getNeuron(j).numberOfOutputConnections());
 				for(int c=0;c<example.getLayer(i).getNeuron(j).numberOfOutputConnections();c++) {
 					System.out.println("Weight: "+example.getLayer(i).getNeuron(j).getOutputConnection(c).getWeight().getValue());
 				}
@@ -208,9 +264,9 @@ public class Controller {
 			nn.getLayer((nn.numberOfLayers()-1)).getNeuron(i).setError(2*(testOutputs.get(i) - output));//derivative of cost function (y-out)^2
 		}
 		//TEMPORARY CODE
-		for(int i=0;i<nn.getLayer(nn.numberOfLayers()-1).numberOfNeurons();i++) {
+		/*for(int i=0;i<nn.getLayer(nn.numberOfLayers()-1).numberOfNeurons();i++) {
 			System.out.println("Error "+i+": "+nn.getLayer(nn.numberOfLayers()-1).getNeuron(i).getError());
-		}
+		}*/
 		//TEMPORARY CODE
 		//output layer cost has been set. Now go backwards through the network
 		for(int l=nn.numberOfLayers()-1;l>0;l--) {//iterate backwards through the layers
@@ -218,21 +274,21 @@ public class Controller {
 				double errorSum=0;
 				for(int c=0;c<nn.getLayer(l).getNeuron(n).numberOfInputConnections();c++) {//iterate through input connections of current neuron
 					double activationDerivative = nn.getLayer(l).getNeuron(n).activationFunctionDerivative(nn.getLayer(l).getNeuron(n).getInput());
-					System.out.println("Activation derivative: "+activationDerivative);
+					//System.out.println("Activation derivative: "+activationDerivative);
 					double previousActivation = nn.getLayer(l).getNeuron(n).getInputConnection(c).getInputNeuron().getActivation();
-					System.out.println("Previous activation: "+previousActivation);
+					//System.out.println("Previous activation: "+previousActivation);
 					errorSum = nn.getLayer(l).getNeuron(n).sumErrors();
-					System.out.println("Error sum: "+errorSum);
+					//System.out.println("Error sum: "+errorSum);
 					double change = activationDerivative*previousActivation*errorSum;
-					System.out.println("weight change: "+change);
+					//System.out.println("weight change: "+change);
 
 					nn.getLayer(l).getNeuron(n).getInputConnection(c).getWeight().setChange(
 							nn.getLearningRate()*change
 						);
 				}
 				double biasChange = errorSum*nn.getLayer(l).getNeuron(n).activationFunctionDerivative(nn.getLayer(l).getNeuron(n).getInput());
-				System.out.println("Bias change: "+biasChange);
-				double newBias = nn.getLayer(l).getNeuron(n).getBias() - (nn.getLearningRate()*biasChange);
+				//System.out.println("Bias change: "+biasChange);
+				double newBias = nn.getLayer(l).getNeuron(n).getBias() + (nn.getLearningRate()*biasChange);
 				nn.getLayer(l).getNeuron(n).setBias(newBias);
 			}
 		}
