@@ -6,7 +6,8 @@ import java.io.Serializable;
 import java.util.*;
 
 // line 18 "../Persistence.ump"
-// line 40 "../Model2.ump"
+// line 38 "../ExtraCode.ump"
+// line 11 "../Model2.ump"
 public class Neuron implements Serializable
 {
 
@@ -15,6 +16,8 @@ public class Neuron implements Serializable
   //------------------------
 
   //Neuron Attributes
+  private int maxFunctions;
+  private int currentFunction;
   private double bias;
   private double activation;
   private double error;
@@ -30,6 +33,8 @@ public class Neuron implements Serializable
 
   public Neuron(double aBias, double aActivation, double aError, Layer aLayer)
   {
+    maxFunctions = 1;
+    currentFunction = 0;
     bias = aBias;
     activation = aActivation;
     error = aError;
@@ -45,6 +50,22 @@ public class Neuron implements Serializable
   //------------------------
   // INTERFACE
   //------------------------
+
+  public boolean setMaxFunctions(int aMaxFunctions)
+  {
+    boolean wasSet = false;
+    maxFunctions = aMaxFunctions;
+    wasSet = true;
+    return wasSet;
+  }
+
+  public boolean setCurrentFunction(int aCurrentFunction)
+  {
+    boolean wasSet = false;
+    currentFunction = aCurrentFunction;
+    wasSet = true;
+    return wasSet;
+  }
 
   public boolean setBias(double aBias)
   {
@@ -68,6 +89,16 @@ public class Neuron implements Serializable
     error = aError;
     wasSet = true;
     return wasSet;
+  }
+
+  public int getMaxFunctions()
+  {
+    return maxFunctions;
+  }
+
+  public int getCurrentFunction()
+  {
+    return currentFunction;
   }
 
   public double getBias()
@@ -344,27 +375,27 @@ public class Neuron implements Serializable
     }
   }
 
-  // line 49 "../Model2.ump"
+  // line 43 "../ExtraCode.ump"
    private double sigmoid(double input){
     return 1 / (1 + Math.exp(-1*input));
   }
 
-  // line 53 "../Model2.ump"
-   public double sigPrime(double input){
+  // line 47 "../ExtraCode.ump"
+   private double sigPrime(double input){
     return sigmoid(input) + (1- sigmoid(input));
   }
 
-  // line 57 "../Model2.ump"
+  // line 51 "../ExtraCode.ump"
    public void processInputs(){
     double sum = getBias();
 		List<Connection> connections = getInputConnections();
 		for(int i=0;i<connections.size();i++) {
 			sum += connections.get(i).getInputNeuron().getActivation()*connections.get(i).getWeight().getValue(); 
 		}
-		setActivation(sigmoid(sum));
+		setActivation(activationFunction(sum));
   }
 
-  // line 66 "../Model2.ump"
+  // line 60 "../ExtraCode.ump"
    public double getInput(){
     double sum = getBias();
 	   List<Connection> connections = getInputConnections();
@@ -373,21 +404,46 @@ public class Neuron implements Serializable
 	   }
 	   return sum;
   }
-   
-   public double sumErrors() {
+
+  // line 69 "../ExtraCode.ump"
+   public double sumErrors(){
+    if(numberOfOutputConnections() == 0) {
+		   return error;
+	   }
 	   double sum = 0;
 	   for(int i=0;i<numberOfOutputConnections();i++) {
 		   sum += getOutputConnection(i).getOutputNeuron().getError()
 				   * getOutputConnection(i).getWeight().getValue()
-				   * sigPrime(getOutputConnection(i).getOutputNeuron().getInput());
+				   * activationFunctionDerivative(getOutputConnection(i).getOutputNeuron().getInput());
 	   }
+	   this.setError(sum);
 	   return sum;
-   }
+  }
+
+  // line 83 "../ExtraCode.ump"
+   public double activationFunction(double input){
+    if(getCurrentFunction()==0) {
+		  return sigmoid(input);
+	  }else{
+		  return sigmoid(input);
+	  }
+  }
+
+  // line 91 "../ExtraCode.ump"
+   public double activationFunctionDerivative(double input){
+    if(getCurrentFunction()==0) {
+		  return sigPrime(input);
+	  }else{
+		  return sigPrime(input);
+	  }
+  }
 
 
   public String toString()
   {
     return super.toString() + "["+
+            "maxFunctions" + ":" + getMaxFunctions()+ "," +
+            "currentFunction" + ":" + getCurrentFunction()+ "," +
             "bias" + ":" + getBias()+ "," +
             "activation" + ":" + getActivation()+ "," +
             "error" + ":" + getError()+ "]" + System.getProperties().getProperty("line.separator") +

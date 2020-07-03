@@ -1,0 +1,104 @@
+namespace nnmodel2;
+
+use Persistence.ump;
+
+class NeuralNetwork{
+	public  NeuralNetwork(int numInputs, int numHiddenLayers, int nodesPerLayer, int numOutputs, double learningRate){
+		Random rng = new Random();
+	   	layers = new ArrayList<Layer>();
+    	//build input layer
+    	addLayer();
+    	for(int i=0;i<numInputs;i++) {
+    		getLayer(0).addNeuron(rng.nextDouble(), 0, 0);
+    	}
+    	//build hidden layers
+    	for(int i=1;i<=numHiddenLayers;i++) {
+    		addLayer();
+    		for(int j=0;j<nodesPerLayer;j++) {
+    			getLayer(i).addNeuron(rng.nextDouble(), 0, 0);
+    		}
+    	}
+    	//build output layer
+    	addLayer();
+    	for(int i=0;i<numOutputs;i++) {
+    		getLayer(1+numHiddenLayers).addNeuron(rng.nextDouble(), 0, 0);
+    	}
+    	//neurons have been created, now to connect them.
+    	for(int l=0;l<=numHiddenLayers;l++) {
+    		for(int n=0;n<getLayer(l).numberOfNeurons();n++) {//nodes in neural layer
+    			for(int m=0;m<getLayer(l+1).numberOfNeurons();m++) {//nodes in adjacent neural layer
+    				Connection con = new Connection(rng.nextDouble(),0,getLayer(l).getNeuron(n),getLayer(l+1).getNeuron(m));// randomly initialize weights
+    			}
+    		}
+    	}
+    	setLearningRate(learningRate);
+	}
+}
+
+class Neuron{
+	Integer maxFunctions = 1;
+	Integer currentFunction = 0;
+	
+	private double sigmoid(double input) {
+		  return 1 / (1 + Math.exp(-1*input));
+	}
+	
+	private double sigPrime(double input) {
+  		return sigmoid(input) + (1- sigmoid(input));
+  	}
+  	
+	public void processInputs(){
+		double sum = getBias();
+		List<Connection> connections = getInputConnections();
+		for(int i=0;i<connections.size();i++) {
+			sum += connections.get(i).getInputNeuron().getActivation()*connections.get(i).getWeight().getValue(); 
+		}
+		setActivation(activationFunction(sum));
+	}
+
+   public double getInput(){
+	   double sum = getBias();
+	   List<Connection> connections = getInputConnections();
+	   for(int i=0;i<connections.size();i++) {
+		   sum += connections.get(i).getInputNeuron().getActivation()*connections.get(i).getWeight().getValue(); 
+	   }
+	   return sum;
+   }
+   
+   public double sumErrors(){
+    if(numberOfOutputConnections() == 0) {
+		   return error;
+	   }
+	   double sum = 0;
+	   for(int i=0;i<numberOfOutputConnections();i++) {
+		   sum += getOutputConnection(i).getOutputNeuron().getError()
+				   * getOutputConnection(i).getWeight().getValue()
+				   * activationFunctionDerivative(getOutputConnection(i).getOutputNeuron().getInput());
+	   }
+	   this.setError(sum);
+	   return sum;
+  }
+ 	  
+  public double activationFunction(double input) {
+	  if(getCurrentFunction()==0) {
+		  return sigmoid(input);
+	  }else{
+		  return sigmoid(input);
+	  }
+  }
+  
+  public double activationFunctionDerivative(double input) {
+	  if(getCurrentFunction()==0) {
+		  return sigPrime(input);
+	  }else{
+		  return sigPrime(input);
+	  }
+  }
+}
+
+class Connection{
+  	public void updateWeight() {
+  		weight.setValue(weight.getValue()-weight.getChange());
+  		weight.setChange(0);
+  	}
+}

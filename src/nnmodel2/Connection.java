@@ -5,7 +5,8 @@ package nnmodel2;
 import java.io.Serializable;
 
 // line 11 "../Persistence.ump"
-// line 80 "../Model2.ump"
+// line 99 "../ExtraCode.ump"
+// line 25 "../Model2.ump"
 public class Connection implements Serializable
 {
 
@@ -134,6 +135,12 @@ public class Connection implements Serializable
       placeholderOutputNeuron.removeInputConnection(this);
     }
   }
+
+  // line 101 "../ExtraCode.ump"
+   public void updateWeight(){
+    weight.setValue(weight.getValue()+weight.getChange());
+  		weight.setChange(0);
+  }
   
   //------------------------
   // DEVELOPER CODE - PROVIDED AS-IS
@@ -143,8 +150,4 @@ public class Connection implements Serializable
   private static final long serialVersionUID = 4267485601061759914L ;
 
   
-  	public void updateWeight() {
-  		weight.setValue(weight.getValue()+weight.getChange());
-  		weight.setChange(0);
-  	}
 }

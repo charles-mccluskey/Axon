@@ -6,7 +6,8 @@ import java.io.Serializable;
 import java.util.*;
 
 // line 4 "../Persistence.ump"
-// line 5 "../Model2.ump"
+// line 5 "../ExtraCode.ump"
+// line 6 "../Model2.ump"
 public class NeuralNetwork implements Serializable
 {
 
@@ -160,7 +161,7 @@ public class NeuralNetwork implements Serializable
     
   }
 
-  // line 9 "../Model2.ump"
+  // line 7 "../ExtraCode.ump"
    public  NeuralNetwork(int numInputs, int numHiddenLayers, int nodesPerLayer, int numOutputs, double learningRate){
     Random rng = new Random();
 	   	layers = new ArrayList<Layer>();
