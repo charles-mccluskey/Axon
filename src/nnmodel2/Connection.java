@@ -5,7 +5,7 @@ package nnmodel2;
 import java.io.Serializable;
 
 // line 11 "../Persistence.ump"
-// line 99 "../ExtraCode.ump"
+// line 157 "../ExtraCode.ump"
 // line 25 "../Model2.ump"
 public class Connection implements Serializable
 {
@@ -136,7 +136,7 @@ public class Connection implements Serializable
     }
   }
 
-  // line 101 "../ExtraCode.ump"
+  // line 159 "../ExtraCode.ump"
    public void updateWeight(){
     weight.setValue(weight.getValue()+weight.getChange());
   		weight.setChange(0);

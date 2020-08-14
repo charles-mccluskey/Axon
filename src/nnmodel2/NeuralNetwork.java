@@ -16,6 +16,7 @@ public class NeuralNetwork implements Serializable
   //------------------------
 
   //NeuralNetwork Attributes
+  private int mutationRate;
   private double learningRate;
 
   //NeuralNetwork Associations
@@ -27,6 +28,7 @@ public class NeuralNetwork implements Serializable
 
   public NeuralNetwork(double aLearningRate)
   {
+    mutationRate = 10;
     learningRate = aLearningRate;
     layers = new ArrayList<Layer>();
   }
@@ -35,12 +37,25 @@ public class NeuralNetwork implements Serializable
   // INTERFACE
   //------------------------
 
+  public boolean setMutationRate(int aMutationRate)
+  {
+    boolean wasSet = false;
+    mutationRate = aMutationRate;
+    wasSet = true;
+    return wasSet;
+  }
+
   public boolean setLearningRate(double aLearningRate)
   {
     boolean wasSet = false;
     learningRate = aLearningRate;
     wasSet = true;
     return wasSet;
+  }
+
+  public int getMutationRate()
+  {
+    return mutationRate;
   }
 
   public double getLearningRate()
@@ -161,7 +176,7 @@ public class NeuralNetwork implements Serializable
     
   }
 
-  // line 7 "../ExtraCode.ump"
+  // line 9 "../ExtraCode.ump"
    public  NeuralNetwork(int numInputs, int numHiddenLayers, int nodesPerLayer, int numOutputs, double learningRate){
     Random rng = new Random();
 	   	layers = new ArrayList<Layer>();
@@ -197,6 +212,7 @@ public class NeuralNetwork implements Serializable
   public String toString()
   {
     return super.toString() + "["+
+            "mutationRate" + ":" + getMutationRate()+ "," +
             "learningRate" + ":" + getLearningRate()+ "]";
   }  
   //------------------------

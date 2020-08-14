@@ -1,14 +1,157 @@
+package API;
+
 import java.util.*;
 import java.io.*;
 import nnmodel2.*;
 
-public class Controller {
+public class AxonController {
+	
+	private static List<NeuralNetwork> networks;
+	private NeuralNetwork bestNetwork;
+	
+	public AxonController() {
+		networks = new ArrayList<NeuralNetwork>();
+	}
+	/** Generate an initial fully connected neural network for your project. 
+	 * 
+	 * @param numInputs - The number of inputs your network requires; this will never change.
+	 * @param numHiddenLayers - The number of initial hidden layers the network will have; this is changeable via mutation, but the number of initial hidden layers should be
+	 *  proportional to the complexity of the task of the network.
+	 * @param nodesPerLayer - The number of initial nodes per hidden layer. Changeable via mutation.
+	 * @param numOutputs - The number of outputs the network will have; this will never change.
+	 * @param learningRate - The learning rate of the network. Changeable via mutation.
+	 * @return true if network is successfully created.
+	 */
+	public boolean createPrimaryNetwork(int numInputs, int numHiddenLayers, int nodesPerLayer, int numOutputs, double learningRate) {
+		if(networks.isEmpty()) {
+			NeuralNetwork network = new NeuralNetwork(numInputs, numHiddenLayers, nodesPerLayer, numOutputs, learningRate);
+			networks.add(network);
+			return true;
+		}
+		return false;
+	}
+	
+	/** Save the current primary network to a file. If name is empty, it will use the previously used name (when either loading or saving) or default to "NN.AxonNetwork".
+	 * 
+	 * @param name - desired name of network save file.
+	 * @return true if network has been saved.
+	 */
+	public boolean savePrimaryNetwork(String name) {
+		if(!networks.isEmpty()) {
+			if(!name.isEmpty()) {
+				NNPersistence.setFilename(name);
+			}
+			NNPersistence.save(networks.get(0));
+			return true;
+		}
+		return false;
+	}
+	
+	/** load the desired Axon network to your program.
+	 * 
+	 * @param name - The name of the Axon network you wish to load.
+	 * @return true if network is successfully loaded.
+	 */
+	public boolean loadPrimaryNetwork(String name) {
+		if(!name.isEmpty()) {
+			NNPersistence.setFilename(name);			
+		}
+		try {
+			networks.add(0, NNPersistence.load());
+			return true;
+		} catch (FileNotFoundException e) {
+			System.out.println("Network with name \""+name+"\" not found.");
+		}
+		return false;
+	}
+	
+	public boolean mutatePrimaryNetwork(int generationSize) {
+		if(networks.isEmpty()) {
+			return false;
+		}
+		Random rng = new Random();
+		int mutationRate = networks.get(0).getMutationRate();
+		List<NeuralNetwork> nextGen = new ArrayList<NeuralNetwork>();
+		for(int g=0;g<generationSize;g++) {
+			for(int m=0;m<mutationRate;m++) {
+				
+			}
+		}
 
-	public static void main(String[] args) {
+		
+		
+		
+		return false;
+	}
+	
+	private static void accuracyTest() {
+		NeuralNetwork example;
+		NNPersistence.setFilename("NN");
+		try {
+			example = NNPersistence.load();
+		} catch (FileNotFoundException e) {
+			example = new NeuralNetwork(2,3,4,4,0.1);
+		}
+		
+		File currentDir = new File("");
+		String path = currentDir.getAbsolutePath();
+		String filePath = path+"/trainingData.txt";
+		List<Integer> xVals = new ArrayList<Integer>();
+		List<Integer> yVals = new ArrayList<Integer>();
+		List<Integer> quadrants = new ArrayList<Integer>();
+		try {
+			BufferedReader reader = new BufferedReader (new FileReader(filePath));
 
-		//simpleTest();
-		//quadrantTestTraining();
-		quadrantTest();
+			List<String[]> lines = new ArrayList<String[]>();
+			String line = reader.readLine();
+			while(line != null) {
+				lines.add(line.split(";"));
+				line = reader.readLine();
+			}
+			for(int i=0;i<lines.size();i++) {
+				xVals.add(Integer.parseInt(lines.get(i)[0]));
+				yVals.add(Integer.parseInt(lines.get(i)[1]));
+				quadrants.add(Integer.parseInt(lines.get(i)[2]));
+			}
+			reader.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		//training set has been retrieved in the form of 3 lists
+		int corrects=0;
+		int incorrects=0;
+		
+		try {
+			for(int i=0;i<quadrants.size();i++) {
+				List<Double> testInput = new ArrayList<Double>();
+				testInput.add( (double) xVals.get(i));
+				testInput.add( (double) yVals.get(i));	
+				List<Double> results = forwardPropagation(example,testInput);
+				
+				int quad=1;
+				double max=results.get(0);
+				for(int r=1;r<results.size();r++) {
+					if(results.get(r)>max) {
+						max=results.get(r);
+						quad=r+1;
+					}
+				}
+				
+				if(quad==quadrants.get(i)) {
+					corrects++;
+				}else {
+					incorrects++;
+				}
+			}
+			//What percentage are correct?
+			double accuracy = (double) corrects / ((double) corrects+(double) incorrects);
+			System.out.println("NN accuracy on training data: "+accuracy);
+		} catch (InvalidPropertiesFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	private static void simpleTest() {

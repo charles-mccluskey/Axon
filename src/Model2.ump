@@ -24,10 +24,6 @@ class Layer{
 
 class Connection{
     1 -- 1 Weight;
-  	public void updateWeight() {
-  		weight.setValue(weight.getValue()+weight.getChange());
-  		weight.setChange(0);
-  	}
 }
 
 class Weight{

@@ -3,7 +3,10 @@ namespace nnmodel2;
 use Persistence.ump;
 
 class NeuralNetwork{
+	Integer mutationRate = 10;
+
 	public  NeuralNetwork(int numInputs, int numHiddenLayers, int nodesPerLayer, int numOutputs, double learningRate){
+		mutationRate = 10;
 		Random rng = new Random();
 	   	layers = new ArrayList<Layer>();
     	//build input layer
@@ -36,8 +39,32 @@ class NeuralNetwork{
 }
 
 class Neuron{
-	Integer maxFunctions = 1;
+	Integer maxFunctions = 5;
 	Integer currentFunction = 0;
+	
+	private double swish(double input){
+		return input * sigmoid(input);
+	}
+	
+	private double swishPrime(double input){
+		return Math.exp(input)*(input + Math.exp(input)+1)/Math.pow((Math.exp(input)+1), 2);
+	}
+	
+	private double leakyRelu(double input) {
+	  	if(input <=0) {
+		  	return input*-0.1;
+	  	}else {
+		  	return input;
+	  	}
+  	}
+  
+  	private double leakyReluPrime(double input) {
+	  	if(input <= 0) {
+		  	return -0.1;
+	  	}else {
+		  	return 1;
+	  	}
+ 	}
 	
 	private double sigmoid(double input) {
 		  return 1 / (1 + Math.exp(-1*input));
@@ -46,6 +73,22 @@ class Neuron{
 	private double sigPrime(double input) {
   		return sigmoid(input) * (1- sigmoid(input));
   	}
+  	
+  	private double tanH(double input) {
+		return Math.tanh(input);
+   	}
+   
+  	private double tanHPrime(double input) {
+		return (1-Math.pow(Math.tanh(input), 2));
+  	}
+  	
+ 	private double softPlus(double input) {
+		return Math.log(1+Math.exp(input));
+   	}
+   
+   	private double softPlusPrime(double input) {
+	   	return 1/(1+Math.exp(-1*input));
+   	}
   	
 	public void processInputs(){
 		double sum = getBias();
@@ -79,17 +122,33 @@ class Neuron{
 	   return sum;
   }
  	  
-  public double activationFunction(double input) {
-	  if(getCurrentFunction()==0) {
+   public double activationFunction(double input){
+    if(getCurrentFunction()==0) {
 		  return sigmoid(input);
+	  }else if(getCurrentFunction()==1) {
+		  return tanH(input);
+	  }else if(getCurrentFunction()==2) {
+		  return softPlus(input);
+	  }else if(getCurrentFunction()==3) {
+		  return leakyRelu(input);
+	  }else if(getCurrentFunction()==4) {
+		  return swish(input);
 	  }else{
 		  return sigmoid(input);
 	  }
   }
   
-  public double activationFunctionDerivative(double input) {
-	  if(getCurrentFunction()==0) {
+   public double activationFunctionDerivative(double input){
+    if(getCurrentFunction()==0) {
 		  return sigPrime(input);
+	  }else if(getCurrentFunction()==1){
+		  return tanHPrime(input);
+	  }else if(getCurrentFunction()==2){
+		  return softPlusPrime(input);
+	  }else if(getCurrentFunction()==3) {
+		  return leakyReluPrime(input);
+	  }else if(getCurrentFunction()==4) {
+		  return swishPrime(input);
 	  }else{
 		  return sigPrime(input);
 	  }
@@ -98,7 +157,7 @@ class Neuron{
 
 class Connection{
   	public void updateWeight() {
-  		weight.setValue(weight.getValue()-weight.getChange());
+  		weight.setValue(weight.getValue()+weight.getChange());
   		weight.setChange(0);
   	}
 }

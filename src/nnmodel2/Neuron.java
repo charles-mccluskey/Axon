@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.*;
 
 // line 18 "../Persistence.ump"
-// line 38 "../ExtraCode.ump"
+// line 40 "../ExtraCode.ump"
 // line 11 "../Model2.ump"
 public class Neuron implements Serializable
 {
@@ -33,7 +33,7 @@ public class Neuron implements Serializable
 
   public Neuron(double aBias, double aActivation, double aError, Layer aLayer)
   {
-    maxFunctions = 1;
+    maxFunctions = 5;
     currentFunction = 0;
     bias = aBias;
     activation = aActivation;
@@ -375,17 +375,65 @@ public class Neuron implements Serializable
     }
   }
 
-  // line 43 "../ExtraCode.ump"
+  // line 45 "../ExtraCode.ump"
+   private double swish(double input){
+    return input * sigmoid(input);
+  }
+
+  // line 49 "../ExtraCode.ump"
+   private double swishPrime(double input){
+    return Math.exp(input)*(input + Math.exp(input)+1)/Math.pow((Math.exp(input)+1), 2);
+  }
+
+  // line 53 "../ExtraCode.ump"
+   private double leakyRelu(double input){
+    if(input <=0) {
+		  	return input*-0.1;
+	  	}else {
+		  	return input;
+	  	}
+  }
+
+  // line 61 "../ExtraCode.ump"
+   private double leakyReluPrime(double input){
+    if(input <= 0) {
+		  	return -0.1;
+	  	}else {
+		  	return 1;
+	  	}
+  }
+
+  // line 69 "../ExtraCode.ump"
    private double sigmoid(double input){
     return 1 / (1 + Math.exp(-1*input));
   }
 
-  // line 47 "../ExtraCode.ump"
+  // line 73 "../ExtraCode.ump"
    private double sigPrime(double input){
     return sigmoid(input) * (1- sigmoid(input));
   }
 
-  // line 51 "../ExtraCode.ump"
+  // line 77 "../ExtraCode.ump"
+   private double tanH(double input){
+    return Math.tanh(input);
+  }
+
+  // line 81 "../ExtraCode.ump"
+   private double tanHPrime(double input){
+    return (1-Math.pow(Math.tanh(input), 2));
+  }
+
+  // line 85 "../ExtraCode.ump"
+   private double softPlus(double input){
+    return Math.log(1+Math.exp(input));
+  }
+
+  // line 89 "../ExtraCode.ump"
+   private double softPlusPrime(double input){
+    return 1/(1+Math.exp(-1*input));
+  }
+
+  // line 93 "../ExtraCode.ump"
    public void processInputs(){
     double sum = getBias();
 		List<Connection> connections = getInputConnections();
@@ -395,7 +443,7 @@ public class Neuron implements Serializable
 		setActivation(activationFunction(sum));
   }
 
-  // line 60 "../ExtraCode.ump"
+  // line 102 "../ExtraCode.ump"
    public double getInput(){
     double sum = getBias();
 	   List<Connection> connections = getInputConnections();
@@ -405,7 +453,7 @@ public class Neuron implements Serializable
 	   return sum;
   }
 
-  // line 69 "../ExtraCode.ump"
+  // line 111 "../ExtraCode.ump"
    public double sumErrors(){
     if(numberOfOutputConnections() == 0) {
 		   return error;
@@ -420,19 +468,35 @@ public class Neuron implements Serializable
 	   return sum;
   }
 
-  // line 83 "../ExtraCode.ump"
+  // line 125 "../ExtraCode.ump"
    public double activationFunction(double input){
     if(getCurrentFunction()==0) {
 		  return sigmoid(input);
+	  }else if(getCurrentFunction()==1) {
+		  return tanH(input);
+	  }else if(getCurrentFunction()==2) {
+		  return softPlus(input);
+	  }else if(getCurrentFunction()==3) {
+		  return leakyRelu(input);
+	  }else if(getCurrentFunction()==4) {
+		  return swish(input);
 	  }else{
 		  return sigmoid(input);
 	  }
   }
 
-  // line 91 "../ExtraCode.ump"
+  // line 141 "../ExtraCode.ump"
    public double activationFunctionDerivative(double input){
     if(getCurrentFunction()==0) {
 		  return sigPrime(input);
+	  }else if(getCurrentFunction()==1){
+		  return tanHPrime(input);
+	  }else if(getCurrentFunction()==2){
+		  return softPlusPrime(input);
+	  }else if(getCurrentFunction()==3) {
+		  return leakyReluPrime(input);
+	  }else if(getCurrentFunction()==4) {
+		  return swishPrime(input);
 	  }else{
 		  return sigPrime(input);
 	  }
