@@ -3,6 +3,7 @@
 
 package nnmodel2;
 import java.io.Serializable;
+import java.io.*;
 import java.util.*;
 
 // line 4 "../Persistence.ump"
@@ -28,7 +29,7 @@ public class NeuralNetwork implements Serializable
 
   public NeuralNetwork(double aLearningRate)
   {
-    mutationRate = 10;
+    mutationRate = 5;
     learningRate = aLearningRate;
     layers = new ArrayList<Layer>();
   }
@@ -176,9 +177,10 @@ public class NeuralNetwork implements Serializable
     
   }
 
-  // line 9 "../ExtraCode.ump"
+  // line 10 "../ExtraCode.ump"
    public  NeuralNetwork(int numInputs, int numHiddenLayers, int nodesPerLayer, int numOutputs, double learningRate){
-    Random rng = new Random();
+    mutationRate = 5;
+		Random rng = new Random();
 	   	layers = new ArrayList<Layer>();
     	//build input layer
     	addLayer();
@@ -206,6 +208,23 @@ public class NeuralNetwork implements Serializable
     		}
     	}
     	setLearningRate(learningRate);
+  }
+
+  // line 42 "../ExtraCode.ump"
+   public NeuralNetwork deepClone(){
+    try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(this);
+
+			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			return (NeuralNetwork) ois.readObject();
+		} catch (IOException e) {
+			return null;
+		} catch (ClassNotFoundException e) {
+			return null;
+		}
   }
 
 

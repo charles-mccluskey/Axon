@@ -15,6 +15,10 @@ public class TestTrainer {
 	public static void main(String[] args) {
 		AxonController axon = new AxonController();
 		
+		axon.createPrimaryNetwork(3, 4, 3, 3, 0.1);
+		axon.testController();
+		
+		/*
 		File currentDir = new File("");
 		String path = currentDir.getAbsolutePath();
 		String filePath = path+"/trainingData.txt";
@@ -40,7 +44,7 @@ public class TestTrainer {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		}*/
 
 	}
 

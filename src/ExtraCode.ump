@@ -3,10 +3,11 @@ namespace nnmodel2;
 use Persistence.ump;
 
 class NeuralNetwork{
-	Integer mutationRate = 10;
-
+	Integer mutationRate = 5;
+	
+	depend java.io.*;
 	public  NeuralNetwork(int numInputs, int numHiddenLayers, int nodesPerLayer, int numOutputs, double learningRate){
-		mutationRate = 10;
+		mutationRate = 5;
 		Random rng = new Random();
 	   	layers = new ArrayList<Layer>();
     	//build input layer
@@ -36,6 +37,23 @@ class NeuralNetwork{
     	}
     	setLearningRate(learningRate);
 	}
+	
+	public NeuralNetwork deepClone() {
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(this);
+
+			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			return (NeuralNetwork) ois.readObject();
+		} catch (IOException e) {
+			return null;
+		} catch (ClassNotFoundException e) {
+			return null;
+		}
+	}
+	
 }
 
 class Neuron{
