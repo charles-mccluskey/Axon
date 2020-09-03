@@ -17,11 +17,9 @@ public class AxonController {
 	 * 
 	 */
 	public void testController() {
-		//printNNTwo(networks.get(0));
-		System.out.println("Original rate: "+networks.get(0).getMutationRate());
-		NeuralNetwork test = changeMutationRate(networks.get(0).deepClone());
-		System.out.println("New rate: "+test.getMutationRate());
-		//printNNTwo(test);
+		printNNTwo(networks.get(0));
+		NeuralNetwork test = addRandomConnection(networks.get(0).deepClone());
+		printNNTwo(test);
 	}
 	
 	/** Generate an initial fully connected neural network for your project. 
@@ -89,18 +87,39 @@ public class AxonController {
 		
 		//initialize necessary objects
 		Random rng = new Random();
-		int mutationRate = networks.get(0).getMutationRate();
+		int primaryMutationRate = networks.get(0).getMutationRate();
 		List<NeuralNetwork> nextGen = new ArrayList<NeuralNetwork>();
 		
 		for(int g=0;g<generationSize;g++) {
 			NeuralNetwork network = networks.get(0).deepClone();//clone the primary network
-			for(int m=0;m<mutationRate;m++) {//apply a randomly selected mutation to it
-				//TODO: Create the initial list of mutations as private methods to be called.
+			for(int m=0;m<primaryMutationRate;m++) {//apply randomly selected mutations to it
+				int mutation = rng.nextInt(9);
+				if(mutation == 0) {
+					network = addRandomNeuron(network);
+				}else if(mutation == 1) {
+					network = removeRandomNeuron(network);
+				}else if(mutation == 2) {
+					network = addRandomLayer(network);
+				}else if(mutation == 3) {
+					network = removeRandomLayer(network);
+				}else if(mutation == 4) {
+					network = changeMutationRate(network);
+				}else if(mutation == 5) {
+					network = changeActivations(network);
+				}else if(mutation == 6) {
+					network = changeLearningRateRandom(network);
+				}else if(mutation == 7) {
+					network = removeRandomConnection(network);
+				}else if(mutation == 8) {
+					network = addRandomConnection(network);
+				}
 			}
+			nextGen.add(network);
 		}
-		
-		
-		return false;
+		//the nextGen list has been loaded with randomly mutated networks based off primary network from previous generation
+		networks.clear();
+		networks = nextGen;
+		return true;
 	}
 	
 	private static NeuralNetwork addRandomNeuron(NeuralNetwork input) {
@@ -150,7 +169,6 @@ public class AxonController {
 		Random rng = new Random();
 		//pick random layer to duplicate
 		int layerIndex = rng.nextInt(input.numberOfLayers());
-		System.out.println("Layer to duplicate: "+layerIndex);
 		//random layer selected.
 		Layer originalLayer = input.getLayer(layerIndex);
 		Layer newLayer = new Layer(input);
@@ -185,7 +203,6 @@ public class AxonController {
 			}
 			layerIndex = rng.nextInt(input.numberOfLayers());
 		}
-		System.out.println("Layer to remove: "+layerIndex);
 		//random hidden layer selected.
 		input.getLayer(layerIndex).delete();
 		//Layer deleted. Rewire connections between existing layers
@@ -206,6 +223,81 @@ public class AxonController {
 		}
 		mutationRate += alteration;
 		input.setMutationRate(mutationRate);
+		
+		return input;
+	}
+	
+	private static NeuralNetwork changeActivations(NeuralNetwork input) {
+		Random rng = new Random();
+		//pick random hidden layer
+		int layerIndex = rng.nextInt(input.numberOfLayers());
+		while(true && input.numberOfLayers()>2) {
+			//avoid input and output layers
+			if(layerIndex!=0 && layerIndex!=input.numberOfLayers()-1) {
+				break;
+			}
+			layerIndex = rng.nextInt(input.numberOfLayers());
+		}
+		//random layer selected.
+		//select random Neuron
+		int selectedNeuron = rng.nextInt(input.getLayer(layerIndex).numberOfNeurons());
+		//change activation function
+		input.getLayer(layerIndex).getNeuron(selectedNeuron).setCurrentFunction( rng.nextInt( input.getLayer(layerIndex).getNeuron(selectedNeuron).getMaxFunctions() ) );
+		
+		return input;
+	}
+	
+	//Needs more research.
+	private static NeuralNetwork changeLearningRateRandom(NeuralNetwork input) {
+		Random rng = new Random();
+		double currentRate = input.getLearningRate();
+		double change = rng.nextDouble()*0.1;
+		if(rng.nextInt(2)==0) {
+			change *= -1;
+		}
+		currentRate += change;
+		input.setLearningRate(currentRate);
+		return input;
+	}
+	
+	private static NeuralNetwork removeRandomConnection(NeuralNetwork input) {
+		Random rng = new Random();
+		//pick random layer
+		int layerIndex = rng.nextInt(input.numberOfLayers());
+		//random layer selected.
+		int selectedNeuron = rng.nextInt(input.getLayer(layerIndex).numberOfNeurons());
+		//random neuron selected
+		//input or output connection?
+		int side = rng.nextInt(2);
+		if(side==0 && input.getLayer(layerIndex).getNeuron(selectedNeuron).hasInputConnections()) {
+			int toDelete = rng.nextInt(input.getLayer(layerIndex).getNeuron(selectedNeuron).numberOfInputConnections());
+			input.getLayer(layerIndex).getNeuron(selectedNeuron).getInputConnection(toDelete).delete();
+		}else{
+			int toDelete = rng.nextInt(input.getLayer(layerIndex).getNeuron(selectedNeuron).numberOfOutputConnections());
+			input.getLayer(layerIndex).getNeuron(selectedNeuron).getOutputConnection(toDelete).delete();			
+		}
+		return input;
+	}
+	
+	private static NeuralNetwork addRandomConnection(NeuralNetwork input) {
+		Random rng = new Random();
+		//pick two layers
+		int layerOne = rng.nextInt(input.numberOfLayers());
+		int layerTwo = rng.nextInt(input.numberOfLayers());
+		while(layerOne == layerTwo) {
+			layerTwo = rng.nextInt(input.numberOfLayers());
+		}
+		Neuron neuronOne;
+		Neuron neuronTwo;
+		if(layerOne < layerTwo) {//neuronOne comes before neuronTwo
+			neuronOne = input.getLayer(layerOne).getNeuron(rng.nextInt(input.getLayer(layerOne).numberOfNeurons()));
+			neuronTwo = input.getLayer(layerTwo).getNeuron(rng.nextInt(input.getLayer(layerTwo).numberOfNeurons()));
+		}else {
+			neuronTwo = input.getLayer(layerOne).getNeuron(rng.nextInt(input.getLayer(layerOne).numberOfNeurons()));
+			neuronOne = input.getLayer(layerTwo).getNeuron(rng.nextInt(input.getLayer(layerTwo).numberOfNeurons()));			
+		}
+		//with the two random neuron selected, create a connection between them.
+		Connection con = new Connection(rng.nextDouble(),0,neuronOne,neuronTwo);
 		
 		return input;
 	}
