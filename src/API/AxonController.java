@@ -8,6 +8,7 @@ public class AxonController {
 	
 	private static List<NeuralNetwork> networks;
 	private NeuralNetwork bestNetwork;
+	private int activeNetwork;
 	
 	public AxonController() {
 		networks = new ArrayList<NeuralNetwork>();
@@ -22,7 +23,8 @@ public class AxonController {
 		printNNTwo(test);
 	}
 	
-	/** Generate an initial fully connected neural network for your project. 
+	/** Generate an initial fully connected neural network for your project. Sets primary network to active network.
+	 * This method should only be used to initialize your project!
 	 * 
 	 * @param numInputs - The number of inputs your network requires; this will never change.
 	 * @param numHiddenLayers - The number of initial hidden layers the network will have; this is changeable via mutation, but the number of initial hidden layers should be
@@ -36,6 +38,7 @@ public class AxonController {
 		if(networks.isEmpty()) {
 			NeuralNetwork network = new NeuralNetwork(numInputs, numHiddenLayers, nodesPerLayer, numOutputs, learningRate);
 			networks.add(network);
+			activeNetwork = 0;
 			return true;
 		}
 		return false;
@@ -57,7 +60,24 @@ public class AxonController {
 		return false;
 	}
 	
-	/** load the desired Axon network to your program.
+	/** Save the best overall network to a file. Remember to set the best network beforehand!
+	 * If name is empty, it will use the previously used name (when either loading or saving) or default to "NN.AxonNetwork".
+	 * 
+	 * @param name - desired name of network save file.
+	 * @return true if network has been saved.
+	 */
+	public boolean saveBestNetwork(String name) {
+		if(bestNetwork != null) {
+			if(!name.isEmpty()) {
+				NNPersistence.setFilename(name);
+			}
+			NNPersistence.save(bestNetwork);
+			return true;
+		}
+		return false;
+	}
+	
+	/** load the desired Axon network to your program as primary network.
 	 * 
 	 * @param name - The name of the Axon network you wish to load.
 	 * @return true if network is successfully loaded.
@@ -119,6 +139,78 @@ public class AxonController {
 		//the nextGen list has been loaded with randomly mutated networks based off primary network from previous generation
 		networks.clear();
 		networks = nextGen;
+		return true;
+	}
+
+	/** Sets next network in the generation as active. Use to iterate through the generation.
+	 * 
+	 * @return True if next network has been set as active. False if there is no next network.
+	 */
+	public boolean nextNetwork() {
+		if(activeNetwork+1 > networks.size()) {
+			return false;
+		}else {
+			activeNetwork++;
+			return true;
+		}
+	}
+	
+	/** Manually set which network is the active network
+	 * 
+	 * @param index
+	 * @return True if index corresponds to a valid network. False if the index exceeds the number of networks in a generation or is negative.
+	 */
+	public boolean setActiveNetwork(int index) {
+		if(index >= networks.size() || index < 0) {
+			return false;
+		}else {
+			activeNetwork = index;
+			return true;
+		}
+	}
+	
+	/**
+	 * Makes the current active network the primary network by swapping their locations in the list of networks. Important to call before mutating!
+	 */
+	public void setActiveAsPrimary() {
+		NeuralNetwork temp = networks.remove(activeNetwork);
+		NeuralNetwork primary = networks.remove(0);
+		networks.add(0,temp);
+		networks.add(activeNetwork, primary);
+	}
+	
+	/**
+	 * Sets the primary network as the overall best network. 
+	 */
+	public void setPrimaryAsBest() {
+		bestNetwork = networks.get(0);
+	}
+	
+	/**
+	 * 
+	 * @return the number of networks in the current generation
+	 */
+	public int getGenerationSize() {
+		return networks.size();
+	}
+	
+	/** provide an input for the active network in the form of a list of doubles, and it will provide an output in the same format. If training,
+	 * run this method ONCE before training on the relevant example.
+	 * 
+	 * @param input A list of doubles that represents the system you wish the network to interpret.
+	 * @return a list of doubles that represents the network's response to the input.
+	 */
+	public List<Double> feedForwardActive(List<Double> input){
+		try {
+			List<Double> toReturn = forwardPropagation(networks.get(activeNetwork),input);
+			return toReturn;
+		} catch (InvalidPropertiesFormatException e) {
+			return null;
+		}
+	}
+	
+	public boolean trainExample(List<Double> expected) {
+		networks.set(activeNetwork, backPropagation(networks.get(activeNetwork), expected));
 		return true;
 	}
 	
@@ -635,38 +727,27 @@ public class AxonController {
 		return output;
 	}
 	
-	//sigmoid derivative: s`(x) = s(x) * (1 - s(x))
 	private static NeuralNetwork backPropagation(NeuralNetwork nn, List<Double> testOutputs) {
 		//calculate output error:
 		for(int i=0;i<nn.getLayer((nn.numberOfLayers()-1)).numberOfNeurons();i++) {//for each output neuron
 			double output = nn.getLayer((nn.numberOfLayers()-1)).getNeuron(i).getActivation();
 			nn.getLayer((nn.numberOfLayers()-1)).getNeuron(i).setError(2*(testOutputs.get(i) - output));//derivative of cost function (y-out)^2
 		}
-		//TEMPORARY CODE
-		/*for(int i=0;i<nn.getLayer(nn.numberOfLayers()-1).numberOfNeurons();i++) {
-			System.out.println("Error "+i+": "+nn.getLayer(nn.numberOfLayers()-1).getNeuron(i).getError());
-		}*/
-		//TEMPORARY CODE
 		//output layer cost has been set. Now go backwards through the network
 		for(int l=nn.numberOfLayers()-1;l>0;l--) {//iterate backwards through the layers
 			for(int n=0;n<nn.getLayer(l).numberOfNeurons();n++) {//iterate through the neurons;
 				double errorSum=0;
 				for(int c=0;c<nn.getLayer(l).getNeuron(n).numberOfInputConnections();c++) {//iterate through input connections of current neuron
 					double activationDerivative = nn.getLayer(l).getNeuron(n).activationFunctionDerivative(nn.getLayer(l).getNeuron(n).getInput());
-					//System.out.println("Activation derivative: "+activationDerivative);
 					double previousActivation = nn.getLayer(l).getNeuron(n).getInputConnection(c).getInputNeuron().getActivation();
-					//System.out.println("Previous activation: "+previousActivation);
 					errorSum = nn.getLayer(l).getNeuron(n).sumErrors();
-					//System.out.println("Error sum: "+errorSum);
 					double change = activationDerivative*previousActivation*errorSum;
-					//System.out.println("weight change: "+change);
 
 					nn.getLayer(l).getNeuron(n).getInputConnection(c).getWeight().setChange(
 							nn.getLearningRate()*change
 						);
 				}
 				double biasChange = errorSum*nn.getLayer(l).getNeuron(n).activationFunctionDerivative(nn.getLayer(l).getNeuron(n).getInput());
-				//System.out.println("Bias change: "+biasChange);
 				double newBias = nn.getLayer(l).getNeuron(n).getBias() + (nn.getLearningRate()*biasChange);
 				nn.getLayer(l).getNeuron(n).setBias(newBias);
 			}

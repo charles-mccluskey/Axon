@@ -18,7 +18,6 @@ public class TestTrainer {
 		axon.createPrimaryNetwork(3, 4, 3, 3, 0.1);
 		axon.testController();
 
-
 		/*
 		File currentDir = new File("");
 		String path = currentDir.getAbsolutePath();
