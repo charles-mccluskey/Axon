@@ -15,6 +15,7 @@ class Neuron{
 	Double bias;
 	Double activation;
 	Double error;
+	Double softmaxValue;
 }
 
 class Layer{

@@ -5,7 +5,7 @@ package nnmodel2;
 import java.io.Serializable;
 
 // line 32 "../Persistence.ump"
-// line 29 "../Model2.ump"
+// line 30 "../Model2.ump"
 public class Weight implements Serializable
 {
 

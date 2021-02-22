@@ -19,7 +19,8 @@ public class AxonController {
 	 */
 	public void testController() {
 		printNNTwo(networks.get(0));
-		NeuralNetwork test = addRandomConnection(networks.get(0).deepClone());
+		NeuralNetwork test = networks.get(0).deepClone();
+		addRandomConnection(test);
 		printNNTwo(test);
 	}
 	
@@ -115,30 +116,30 @@ public class AxonController {
 			for(int m=0;m<primaryMutationRate;m++) {//apply randomly selected mutations to it
 				int mutation = rng.nextInt(9);
 				if(mutation == 0) {
-					network = addRandomNeuron(network);
+					addRandomNeuron(network);
 				}else if(mutation == 1) {
-					network = removeRandomNeuron(network);
+					removeRandomNeuron(network);
 				}else if(mutation == 2) {
-					network = addRandomLayer(network);
+					addRandomLayer(network);
 				}else if(mutation == 3) {
-					network = removeRandomLayer(network);
+					removeRandomLayer(network);
 				}else if(mutation == 4) {
-					network = changeMutationRate(network);
+					changeMutationRate(network);
 				}else if(mutation == 5) {
-					network = changeActivations(network);
+					changeActivations(network);
 				}else if(mutation == 6) {
-					network = changeLearningRateRandom(network);
+					changeLearningRateRandom(network);
 				}else if(mutation == 7) {
-					network = removeRandomConnection(network);
+					removeRandomConnection(network);
 				}else if(mutation == 8) {
-					network = addRandomConnection(network);
+					addRandomConnection(network);
 				}
 			}
 			nextGen.add(network);
 		}
 		//the nextGen list has been loaded with randomly mutated networks based off primary network from previous generation
 		networks.clear();
-		networks = nextGen;
+		networks.addAll(nextGen);
 		return true;
 	}
 
@@ -209,12 +210,18 @@ public class AxonController {
 		}
 	}
 	
+	/**
+	 * Perform back propagation on the active network to train it on the most recent example that was fed forward. Input MUST be expected result from feeding forward.
+	 * @param expected
+	 * @return
+	 */
 	public boolean trainExample(List<Double> expected) {
-		networks.set(activeNetwork, backPropagation(networks.get(activeNetwork), expected));
+		backPropagation(networks.get(activeNetwork), expected);
+		//networks.set(activeNetwork, backPropagation(networks.get(activeNetwork), expected));
 		return true;
 	}
 	
-	private static NeuralNetwork addRandomNeuron(NeuralNetwork input) {
+	private static void addRandomNeuron(NeuralNetwork input) {
 		Random rng = new Random();
 		//pick random hidden layer
 		int layer = rng.nextInt(input.numberOfLayers());
@@ -226,19 +233,19 @@ public class AxonController {
 			layer = rng.nextInt(input.numberOfLayers());
 		}
 		//random layer selected. Add neuron to layer.
-		Neuron neuron = new Neuron(rng.nextDouble(), 0, 0, input.getLayer(layer));
+		Neuron neuron = new Neuron(rng.nextDouble(), 0, 0, 0, input.getLayer(layer));
 		//neuron added to layer, now fully connect to previous and next layers.
 		for(int i=0;i<input.getLayer(layer-1).numberOfNeurons();i++) {//for all neurons in previous layer
+			//Constructors form the objects within the data structure.
 			Connection con = new Connection(rng.nextDouble(), 0, input.getLayer(layer-1).getNeuron(i), neuron); //connect all previous neurons to new neuron
 		}
 		for(int i=0;i<input.getLayer(layer+1).numberOfNeurons();i++) {//for all neurons in next
 			Connection con = new Connection(rng.nextDouble(), 0, neuron, input.getLayer(layer+1).getNeuron(i)); //connect new neuron to all neurons in next layer
 		}
 		
-		return input;
 	}
 	
-	private static NeuralNetwork removeRandomNeuron(NeuralNetwork input) {
+	private static void removeRandomNeuron(NeuralNetwork input) {
 		Random rng = new Random();
 		//pick random hidden layer
 		int layer = rng.nextInt(input.numberOfLayers());
@@ -254,10 +261,9 @@ public class AxonController {
 		int selectedNeuron = rng.nextInt(input.getLayer(layer).numberOfNeurons());
 		//remove neuron
 		input.getLayer(layer).getNeuron(selectedNeuron).delete();
-		return input;
 	}
 	
-	private static NeuralNetwork addRandomLayer(NeuralNetwork input) {
+	private static void addRandomLayer(NeuralNetwork input) {
 		Random rng = new Random();
 		//pick random layer to duplicate
 		int layerIndex = rng.nextInt(input.numberOfLayers());
@@ -265,7 +271,7 @@ public class AxonController {
 		Layer originalLayer = input.getLayer(layerIndex);
 		Layer newLayer = new Layer(input);
 		for(int i=0;i<originalLayer.numberOfNeurons();i++) {//copy values of target layer
-			newLayer.addNeuron(originalLayer.getNeuron(i).getBias(), 0, 0);
+			newLayer.addNeuron(originalLayer.getNeuron(i).getBias(), 0, 0, 0);
 		}
 		//rewire input connections
 		for(int n=0;n<originalLayer.numberOfNeurons();n++) {
@@ -281,10 +287,9 @@ public class AxonController {
 				Connection con = new Connection(rng.nextDouble(), 0, input.getLayer(layerIndex).getNeuron(n), input.getLayer(layerIndex+1).getNeuron(m));
 			}
 		}
-		return input;
 	}
 	
-	private static NeuralNetwork removeRandomLayer(NeuralNetwork input) {
+	private static void removeRandomLayer(NeuralNetwork input) {
 		Random rng = new Random();
 		//pick random hidden layer
 		int layerIndex = rng.nextInt(input.numberOfLayers());
@@ -303,10 +308,9 @@ public class AxonController {
 				Connection con = new Connection(rng.nextDouble(), 0, input.getLayer(layerIndex-1).getNeuron(i), input.getLayer(layerIndex).getNeuron(j));
 			}
 		}
-		return input;
 	}
 	
-	private static NeuralNetwork changeMutationRate(NeuralNetwork input) {
+	private static void changeMutationRate(NeuralNetwork input) {
 		Random rng = new Random();
 		int mutationRate = input.getMutationRate();
 		int alteration = rng.nextInt(5)-2;
@@ -316,10 +320,9 @@ public class AxonController {
 		mutationRate += alteration;
 		input.setMutationRate(mutationRate);
 		
-		return input;
 	}
 	
-	private static NeuralNetwork changeActivations(NeuralNetwork input) {
+	private static void changeActivations(NeuralNetwork input) {
 		Random rng = new Random();
 		//pick random hidden layer
 		int layerIndex = rng.nextInt(input.numberOfLayers());
@@ -335,12 +338,10 @@ public class AxonController {
 		int selectedNeuron = rng.nextInt(input.getLayer(layerIndex).numberOfNeurons());
 		//change activation function
 		input.getLayer(layerIndex).getNeuron(selectedNeuron).setCurrentFunction( rng.nextInt( input.getLayer(layerIndex).getNeuron(selectedNeuron).getMaxFunctions() ) );
-		
-		return input;
 	}
 	
 	//Needs more research.
-	private static NeuralNetwork changeLearningRateRandom(NeuralNetwork input) {
+	private static void changeLearningRateRandom(NeuralNetwork input) {
 		Random rng = new Random();
 		double currentRate = input.getLearningRate();
 		double change = rng.nextDouble()*0.1;
@@ -349,10 +350,9 @@ public class AxonController {
 		}
 		currentRate += change;
 		input.setLearningRate(currentRate);
-		return input;
 	}
 	
-	private static NeuralNetwork removeRandomConnection(NeuralNetwork input) {
+	private static void removeRandomConnection(NeuralNetwork input) {
 		Random rng = new Random();
 		//pick random layer
 		int layerIndex = rng.nextInt(input.numberOfLayers());
@@ -368,10 +368,9 @@ public class AxonController {
 			int toDelete = rng.nextInt(input.getLayer(layerIndex).getNeuron(selectedNeuron).numberOfOutputConnections());
 			input.getLayer(layerIndex).getNeuron(selectedNeuron).getOutputConnection(toDelete).delete();			
 		}
-		return input;
 	}
 	
-	private static NeuralNetwork addRandomConnection(NeuralNetwork input) {
+	private static void addRandomConnection(NeuralNetwork input) {
 		Random rng = new Random();
 		//pick two layers
 		int layerOne = rng.nextInt(input.numberOfLayers());
@@ -390,9 +389,7 @@ public class AxonController {
 		}
 		//with the two random neuron selected, create a connection between them.
 		Connection con = new Connection(rng.nextDouble(),0,neuronOne,neuronTwo);
-		
-		return input;
-	}
+		}
 	
 	private static void accuracyTest() {
 		NeuralNetwork example;
@@ -489,7 +486,7 @@ public class AxonController {
 			System.out.println("-----------\n");
 			
 			System.out.println("PERFORMING BACKPROPAGATION");
-			example = backPropagation(example,expected);
+			backPropagation(example,expected);
 			System.out.println("BACKPROPAGATION COMPLETE\n");
 			
 			System.out.println("Performing new test");
@@ -609,7 +606,7 @@ public class AxonController {
 			List<Double> testOutput = convertQuadrantToList(quadrants,i);
 			try {
 				List<Double> results = forwardPropagation(example,testInput);
-				example = backPropagation(example,testOutput);
+				backPropagation(example,testOutput);
 			} catch (InvalidPropertiesFormatException e) {
 				e.printStackTrace();
 			}
@@ -706,11 +703,11 @@ public class AxonController {
 	private static List<Double> forwardPropagation(NeuralNetwork nn, List<Double> input) throws InvalidPropertiesFormatException {
 		List<Double> output = new ArrayList<Double>();
 		
-		if(input.size()!=nn.getLayer(0).numberOfNeurons()) {
+		if(input.size()!=nn.getInputLayer().numberOfNeurons()) {
 			throw new InvalidPropertiesFormatException("Input size does not match network input size");
 		}
 		for(int i=0;i<input.size();i++) {
-			nn.getLayer(0).getNeuron(i).setActivation(nn.getLayer(0).getNeuron(i).activationFunction(input.get(i)));
+			nn.getInputLayer().getNeuron(i).setActivation(nn.getLayer(0).getNeuron(i).activationFunction(input.get(i)));
 		}
 		//Input loaded
 		
@@ -724,21 +721,35 @@ public class AxonController {
 		for(int i=0;i<lastLayer;i++) {
 			output.add(nn.getLayer((nn.numberOfLayers()-1)).getNeuron(i).getActivation());
 		}
+		//perform softmax on the output
+		double sum=0;
+		for(int i=0;i<output.size();i++) {
+			output.set(i, Math.exp(output.get(i)));
+			sum+=output.get(i);
+		}
+		for(int i=0;i<output.size();i++) {
+			output.set(i, output.get(i)/sum);
+			nn.getOutputLayer().getNeuron(i).setSoftmaxValue(output.get(i));
+		}
 		return output;
 	}
 	
-	private static NeuralNetwork backPropagation(NeuralNetwork nn, List<Double> testOutputs) {
+	private static void backPropagation(NeuralNetwork nn, List<Double> trainingOutputs) {
 		//calculate output error:
-		for(int i=0;i<nn.getLayer((nn.numberOfLayers()-1)).numberOfNeurons();i++) {//for each output neuron
-			double output = nn.getLayer((nn.numberOfLayers()-1)).getNeuron(i).getActivation();
-			nn.getLayer((nn.numberOfLayers()-1)).getNeuron(i).setError(2*(testOutputs.get(i) - output));//derivative of cost function (y-out)^2
+		for(int i=0;i<nn.getOutputLayer().numberOfNeurons();i++) {//for each output neuron
+			double output = nn.getOutputLayer().getNeuron(i).getActivation();
+			nn.getOutputLayer().getNeuron(i).setError(2*(trainingOutputs.get(i) - output));//derivative of cost function (y-out)^2
+			
+			double softmaxOutput = nn.getOutputLayer().getNeuron(i).getSoftmaxValue();
+			nn.getOutputLayer().getNeuron(i).setError(-(softmaxOutput-trainingOutputs.get(i)));
 		}
 		//output layer cost has been set. Now go backwards through the network
 		for(int l=nn.numberOfLayers()-1;l>0;l--) {//iterate backwards through the layers
 			for(int n=0;n<nn.getLayer(l).numberOfNeurons();n++) {//iterate through the neurons;
+				
 				double errorSum=0;
+				double activationDerivative = nn.getLayer(l).getNeuron(n).activationFunctionDerivative(nn.getLayer(l).getNeuron(n).getInput());
 				for(int c=0;c<nn.getLayer(l).getNeuron(n).numberOfInputConnections();c++) {//iterate through input connections of current neuron
-					double activationDerivative = nn.getLayer(l).getNeuron(n).activationFunctionDerivative(nn.getLayer(l).getNeuron(n).getInput());
 					double previousActivation = nn.getLayer(l).getNeuron(n).getInputConnection(c).getInputNeuron().getActivation();
 					errorSum = nn.getLayer(l).getNeuron(n).sumErrors();
 					double change = activationDerivative*previousActivation*errorSum;
@@ -747,7 +758,7 @@ public class AxonController {
 							nn.getLearningRate()*change
 						);
 				}
-				double biasChange = errorSum*nn.getLayer(l).getNeuron(n).activationFunctionDerivative(nn.getLayer(l).getNeuron(n).getInput());
+				double biasChange = errorSum*activationDerivative;
 				double newBias = nn.getLayer(l).getNeuron(n).getBias() + (nn.getLearningRate()*biasChange);
 				nn.getLayer(l).getNeuron(n).setBias(newBias);
 			}
@@ -763,6 +774,5 @@ public class AxonController {
 				}
 			}
 		}
-		return nn;
 	}	
 }

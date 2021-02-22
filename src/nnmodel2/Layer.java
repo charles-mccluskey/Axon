@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.*;
 
 // line 25 "../Persistence.ump"
-// line 20 "../Model2.ump"
+// line 21 "../Model2.ump"
 public class Layer implements Serializable
 {
 
@@ -82,9 +82,9 @@ public class Layer implements Serializable
     return 1;
   }
   /* Code from template association_AddMandatoryManyToOne */
-  public Neuron addNeuron(double aBias, double aActivation, double aError)
+  public Neuron addNeuron(double aBias, double aActivation, double aError, double aSoftmaxValue)
   {
-    Neuron aNewNeuron = new Neuron(aBias, aActivation, aError, this);
+    Neuron aNewNeuron = new Neuron(aBias, aActivation, aError, aSoftmaxValue, this);
     return aNewNeuron;
   }
 

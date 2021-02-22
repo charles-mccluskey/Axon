@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.*;
 
 // line 18 "../Persistence.ump"
-// line 59 "../ExtraCode.ump"
+// line 68 "../ExtraCode.ump"
 // line 11 "../Model2.ump"
 public class Neuron implements Serializable
 {
@@ -21,6 +21,7 @@ public class Neuron implements Serializable
   private double bias;
   private double activation;
   private double error;
+  private double softmaxValue;
 
   //Neuron Associations
   private List<Connection> outputConnections;
@@ -31,13 +32,14 @@ public class Neuron implements Serializable
   // CONSTRUCTOR
   //------------------------
 
-  public Neuron(double aBias, double aActivation, double aError, Layer aLayer)
+  public Neuron(double aBias, double aActivation, double aError, double aSoftmaxValue, Layer aLayer)
   {
     maxFunctions = 5;
     currentFunction = 0;
     bias = aBias;
     activation = aActivation;
     error = aError;
+    softmaxValue = aSoftmaxValue;
     outputConnections = new ArrayList<Connection>();
     inputConnections = new ArrayList<Connection>();
     boolean didAddLayer = setLayer(aLayer);
@@ -91,6 +93,14 @@ public class Neuron implements Serializable
     return wasSet;
   }
 
+  public boolean setSoftmaxValue(double aSoftmaxValue)
+  {
+    boolean wasSet = false;
+    softmaxValue = aSoftmaxValue;
+    wasSet = true;
+    return wasSet;
+  }
+
   public int getMaxFunctions()
   {
     return maxFunctions;
@@ -114,6 +124,11 @@ public class Neuron implements Serializable
   public double getError()
   {
     return error;
+  }
+
+  public double getSoftmaxValue()
+  {
+    return softmaxValue;
   }
   /* Code from template association_GetMany */
   public Connection getOutputConnection(int index)
@@ -375,17 +390,17 @@ public class Neuron implements Serializable
     }
   }
 
-  // line 64 "../ExtraCode.ump"
+  // line 73 "../ExtraCode.ump"
    private double swish(double input){
     return input * sigmoid(input);
   }
 
-  // line 68 "../ExtraCode.ump"
+  // line 77 "../ExtraCode.ump"
    private double swishPrime(double input){
     return Math.exp(input)*(input + Math.exp(input)+1)/Math.pow((Math.exp(input)+1), 2);
   }
 
-  // line 72 "../ExtraCode.ump"
+  // line 81 "../ExtraCode.ump"
    private double leakyRelu(double input){
     if(input <=0) {
 		  	return input*-0.1;
@@ -394,7 +409,7 @@ public class Neuron implements Serializable
 	  	}
   }
 
-  // line 80 "../ExtraCode.ump"
+  // line 89 "../ExtraCode.ump"
    private double leakyReluPrime(double input){
     if(input <= 0) {
 		  	return -0.1;
@@ -403,37 +418,37 @@ public class Neuron implements Serializable
 	  	}
   }
 
-  // line 88 "../ExtraCode.ump"
+  // line 97 "../ExtraCode.ump"
    private double sigmoid(double input){
     return 1 / (1 + Math.exp(-1*input));
   }
 
-  // line 92 "../ExtraCode.ump"
+  // line 101 "../ExtraCode.ump"
    private double sigPrime(double input){
     return sigmoid(input) * (1- sigmoid(input));
   }
 
-  // line 96 "../ExtraCode.ump"
+  // line 105 "../ExtraCode.ump"
    private double tanH(double input){
     return Math.tanh(input);
   }
 
-  // line 100 "../ExtraCode.ump"
+  // line 109 "../ExtraCode.ump"
    private double tanHPrime(double input){
     return (1-Math.pow(Math.tanh(input), 2));
   }
 
-  // line 104 "../ExtraCode.ump"
+  // line 113 "../ExtraCode.ump"
    private double softPlus(double input){
     return Math.log(1+Math.exp(input));
   }
 
-  // line 108 "../ExtraCode.ump"
+  // line 117 "../ExtraCode.ump"
    private double softPlusPrime(double input){
     return 1/(1+Math.exp(-1*input));
   }
 
-  // line 112 "../ExtraCode.ump"
+  // line 121 "../ExtraCode.ump"
    public void processInputs(){
     double sum = getBias();
 		List<Connection> connections = getInputConnections();
@@ -443,7 +458,7 @@ public class Neuron implements Serializable
 		setActivation(activationFunction(sum));
   }
 
-  // line 121 "../ExtraCode.ump"
+  // line 130 "../ExtraCode.ump"
    public double getInput(){
     double sum = getBias();
 	   List<Connection> connections = getInputConnections();
@@ -453,7 +468,7 @@ public class Neuron implements Serializable
 	   return sum;
   }
 
-  // line 130 "../ExtraCode.ump"
+  // line 139 "../ExtraCode.ump"
    public double sumErrors(){
     if(numberOfOutputConnections() == 0) {
 		   return error;
@@ -468,7 +483,7 @@ public class Neuron implements Serializable
 	   return sum;
   }
 
-  // line 144 "../ExtraCode.ump"
+  // line 153 "../ExtraCode.ump"
    public double activationFunction(double input){
     if(getCurrentFunction()==0) {
 		  return sigmoid(input);
@@ -485,7 +500,7 @@ public class Neuron implements Serializable
 	  }
   }
 
-  // line 160 "../ExtraCode.ump"
+  // line 169 "../ExtraCode.ump"
    public double activationFunctionDerivative(double input){
     if(getCurrentFunction()==0) {
 		  return sigPrime(input);
@@ -510,7 +525,8 @@ public class Neuron implements Serializable
             "currentFunction" + ":" + getCurrentFunction()+ "," +
             "bias" + ":" + getBias()+ "," +
             "activation" + ":" + getActivation()+ "," +
-            "error" + ":" + getError()+ "]" + System.getProperties().getProperty("line.separator") +
+            "error" + ":" + getError()+ "," +
+            "softmaxValue" + ":" + getSoftmaxValue()+ "]" + System.getProperties().getProperty("line.separator") +
             "  " + "layer = "+(getLayer()!=null?Integer.toHexString(System.identityHashCode(getLayer())):"null");
   }  
   //------------------------

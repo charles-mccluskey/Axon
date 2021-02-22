@@ -185,19 +185,19 @@ public class NeuralNetwork implements Serializable
     	//build input layer
     	addLayer();
     	for(int i=0;i<numInputs;i++) {
-    		getLayer(0).addNeuron(rng.nextDouble(), 0, 0);
+    		getLayer(0).addNeuron(rng.nextDouble(), 0, 0, 0);
     	}
     	//build hidden layers
     	for(int i=1;i<=numHiddenLayers;i++) {
     		addLayer();
     		for(int j=0;j<nodesPerLayer;j++) {
-    			getLayer(i).addNeuron(rng.nextDouble(), 0, 0);
+    			getLayer(i).addNeuron(rng.nextDouble(), 0, 0, 0);
     		}
     	}
     	//build output layer
     	addLayer();
     	for(int i=0;i<numOutputs;i++) {
-    		getLayer(1+numHiddenLayers).addNeuron(rng.nextDouble(), 0, 0);
+    		getLayer(1+numHiddenLayers).addNeuron(rng.nextDouble(), 0, 0, 0);
     	}
     	//neurons have been created, now to connect them.
     	for(int l=0;l<=numHiddenLayers;l++) {
@@ -225,6 +225,17 @@ public class NeuralNetwork implements Serializable
 		} catch (ClassNotFoundException e) {
 			return null;
 		}
+  }
+
+  // line 58 "../ExtraCode.ump"
+   public Layer getInputLayer(){
+    return layers.get(0);
+  }
+
+  // line 62 "../ExtraCode.ump"
+   public Layer getOutputLayer(){
+    int numLayers = numberOfLayers();
+	  return layers.get(numLayers-1);
   }
 
 
