@@ -8,7 +8,7 @@ public class AxonController {
 	
 	private static List<NeuralNetwork> networks;
 	private NeuralNetwork bestNetwork;
-	private int activeNetwork;
+	private static int activeNetwork;
 	
 	public AxonController() {
 		networks = new ArrayList<NeuralNetwork>();
@@ -24,7 +24,8 @@ public class AxonController {
 		printNNTwo(test);
 	}
 	
-	/** Generate an initial fully connected neural network for your project. Sets primary network to active network.
+	/** Used for evolutionary algorithms.
+	 * Generate an initial fully connected neural network for your project. Sets primary network to active network.
 	 * This method should only be used to initialize your project!
 	 * 
 	 * @param numInputs - The number of inputs your network requires; this will never change.
@@ -45,7 +46,8 @@ public class AxonController {
 		return false;
 	}
 	
-	/** Save the current primary network to a file. If name is empty, it will use the previously used name (when either loading or saving) or default to "NN.AxonNetwork".
+	/** Used for evolutionary algorithms.
+	 * Save the current primary network to a file. If name is empty, it will use the previously used name (when either loading or saving) or default to "NN.AxonNetwork".
 	 * 
 	 * @param name - desired name of network save file.
 	 * @return true if network has been saved.
@@ -61,7 +63,8 @@ public class AxonController {
 		return false;
 	}
 	
-	/** Save the best overall network to a file. Remember to set the best network beforehand!
+	/** Used for evolutionary algorithms.
+	 * Save the best overall network to a file. Remember to set the best network beforehand!
 	 * If name is empty, it will use the previously used name (when either loading or saving) or default to "NN.AxonNetwork".
 	 * 
 	 * @param name - desired name of network save file.
@@ -78,7 +81,8 @@ public class AxonController {
 		return false;
 	}
 	
-	/** load the desired Axon network to your program as primary network.
+	/** Used for evolutionary algorithms.
+	 * load the desired neural network to your program as primary network.
 	 * 
 	 * @param name - The name of the Axon network you wish to load.
 	 * @return true if network is successfully loaded.
@@ -96,7 +100,8 @@ public class AxonController {
 		return false;
 	}
 	
-	/** Replace the existing list of networks Axon remembers with a new list of networks, which are mutants of the primary network (network in slot 0).
+	/** Used for evolutionary algorithms.
+	 * Replace the existing list of networks Axon remembers with a new list of networks, which are mutants of the primary network (network in slot 0).
 	 * 
 	 * @param generationSize
 	 * @return
@@ -110,7 +115,6 @@ public class AxonController {
 		Random rng = new Random();
 		int primaryMutationRate = networks.get(0).getMutationRate();
 		List<NeuralNetwork> nextGen = new ArrayList<NeuralNetwork>();
-		
 		for(int g=0;g<generationSize;g++) {
 			NeuralNetwork network = networks.get(0).deepClone();//clone the primary network
 			for(int m=0;m<primaryMutationRate;m++) {//apply randomly selected mutations to it
@@ -143,7 +147,8 @@ public class AxonController {
 		return true;
 	}
 
-	/** Sets next network in the generation as active. Use to iterate through the generation.
+	/** Used for evolutionary algorithms.
+	 * Sets next network in the generation as active. Use to iterate through the generation.
 	 * 
 	 * @return True if next network has been set as active. False if there is no next network.
 	 */
@@ -156,7 +161,8 @@ public class AxonController {
 		}
 	}
 	
-	/** Manually set which network is the active network
+	/** Used for evolutionary algorithms.
+	 * Manually set which network is the active network
 	 * 
 	 * @param index
 	 * @return True if index corresponds to a valid network. False if the index exceeds the number of networks in a generation or is negative.
@@ -170,56 +176,172 @@ public class AxonController {
 		}
 	}
 	
-	/**
+	/** Used for evolutionary algorithms.
 	 * Makes the current active network the primary network by swapping their locations in the list of networks. Important to call before mutating!
 	 */
 	public void setActiveAsPrimary() {
+		if(activeNetwork == 0) {//if already primary
+			return;
+		}
 		NeuralNetwork temp = networks.remove(activeNetwork);
 		NeuralNetwork primary = networks.remove(0);
 		networks.add(0,temp);
 		networks.add(activeNetwork, primary);
 	}
 	
-	/**
+	/** Used for evolutionary algorithms.
 	 * Sets the primary network as the overall best network. 
 	 */
 	public void setPrimaryAsBest() {
 		bestNetwork = networks.get(0);
 	}
 	
-	/**
-	 * 
+	/** Used for evolutionary algorithms.
+	 * Sets the best overall network as the primary network.
+	 * Used to reintroduce the best network to the genepool as a sort of version control.
+	 * Call if no updates to best network have been made after a time of your choosing.
+	 */
+	public void setBestAsPrimary() {
+		networks.set(0, bestNetwork);
+	}
+	
+	/** Used for evolutionary algorithms.
+	 * Sets the best overall network as the primary network and sets it as active.
+	 */
+	public void setBestAsPrimaryAndActive() {
+		this.setBestAsPrimary();
+		activeNetwork = 0;
+	}
+	
+	/** Used for evolutionary algorithms.
 	 * @return the number of networks in the current generation
 	 */
 	public int getGenerationSize() {
 		return networks.size();
 	}
 	
-	/** provide an input for the active network in the form of a list of doubles, and it will provide an output in the same format. If training,
-	 * run this method ONCE before training on the relevant example.
+	/** Used for evolutionary algorithms.
+	 * Provide an input for the neural network to process and receive its results. Method not necessarily used for training.
 	 * 
 	 * @param input A list of doubles that represents the system you wish the network to interpret.
 	 * @return a list of doubles that represents the network's response to the input.
 	 */
-	public List<Double> feedForwardActive(List<Double> input){
+	public List<Double> processInputActive(List<Double> input){
 		try {
-			List<Double> toReturn = forwardPropagation(networks.get(activeNetwork),input);
+			//List<Double> toReturn = forwardPropagation(networks.get(activeNetwork),input);
+			List<Double> toReturn = forwardPropagationActive(input);
 			return toReturn;
 		} catch (InvalidPropertiesFormatException e) {
 			return null;
 		}
 	}
 	
-	/**
+	/** Used for evolutionary algorithms.
 	 * Perform back propagation on the active network to train it on the most recent example that was fed forward. Input MUST be expected result from feeding forward.
 	 * @param expected
 	 * @return
+	 * @throws InvalidPropertiesFormatException 
 	 */
-	public boolean trainExample(List<Double> expected) {
-		backPropagation(networks.get(activeNetwork), expected);
-		//networks.set(activeNetwork, backPropagation(networks.get(activeNetwork), expected));
-		return true;
+	public void trainActiveOnExample(List<Double> input, List<Double> expected) throws InvalidPropertiesFormatException {
+		if(networks.get(activeNetwork) == null) {//if there is no network to train
+			throw new InvalidPropertiesFormatException("No network to train. Create or load a network.");
+		}
+		if(networks.get(activeNetwork).getInputLayer().numberOfNeurons() != input.size()) {//verify input sizes match
+			throw new InvalidPropertiesFormatException("Input size does not match network input size.");
+		}
+		if(networks.get(activeNetwork).getOutputLayer().numberOfNeurons() != expected.size()) {//verify output sizes match
+			throw new InvalidPropertiesFormatException("ExpectedOutput size "+expected.size()+"; network output size "+networks.get(activeNetwork).getOutputLayer().numberOfNeurons());
+		}
+		//If we don't have the above problems, we're good to go!
+		forwardPropagationActive(input);//performs forward propagation on the given input. All calculated values are saved in the network itself. Do not need output.
+		backPropagationActive(expected);//performs back propagation and changes weights in the network.
 	}
+	
+	private static List<Double> forwardPropagationActive(List<Double> input) throws InvalidPropertiesFormatException {
+		if(networks.get(activeNetwork) == null) {
+			System.out.println("Primary Neural Network not loaded. Returning null.");
+			return null;
+		}
+		List<Double> output = new ArrayList<Double>();
+		
+		if(input.size()!=networks.get(activeNetwork).getLayer(0).numberOfNeurons()) {//if input array does not equal neural network input layer size
+			throw new InvalidPropertiesFormatException("Input size does not match network input size. Expected "+networks.get(activeNetwork).getInputLayer().numberOfNeurons()+", got "+input.size());
+		}
+		for(int i=0;i<input.size();i++) {
+			networks.get(activeNetwork).getLayer(0).getNeuron(i).setActivation(networks.get(activeNetwork).getLayer(0).getNeuron(i).activationFunction(input.get(i)));
+		}
+		//Input loaded
+		//now perform forward propagation
+		for(int l=1;l<networks.get(activeNetwork).numberOfLayers();l++) {//for each layer
+			for(int n=0;n<networks.get(activeNetwork).getLayer(l).numberOfNeurons();n++) {//for each neuron in the layer
+				networks.get(activeNetwork).getLayer(l).getNeuron(n).processInputs();
+			}
+		}
+		//calculations are done. Retrieve output.
+		int lastLayer = networks.get(activeNetwork).getLayer((networks.get(activeNetwork).numberOfLayers()-1)).numberOfNeurons();
+		for(int i=0;i<lastLayer;i++) {
+			output.add(networks.get(activeNetwork).getLayer((networks.get(activeNetwork).numberOfLayers()-1)).getNeuron(i).getActivation());
+		}
+		//perform softmax on the output
+		double sum=0;
+		for(int i=0;i<output.size();i++) {
+			output.set(i, Math.exp(output.get(i)));
+			sum+=output.get(i);
+		}
+		for(int i=0;i<output.size();i++) {
+			output.set(i, output.get(i)/sum);
+			networks.get(activeNetwork).getOutputLayer().getNeuron(i).setSoftmaxValue(output.get(i));
+		}
+		return output;
+	}
+	
+	private static void backPropagationActive(List<Double> trainingOutputs) {
+		if(networks.get(activeNetwork) == null) {
+			System.out.println("Neural Network not loaded. Returning.");
+			return;
+		}
+		//calculate output error:
+		for(int i=0;i<networks.get(activeNetwork).getLayer((networks.get(activeNetwork).numberOfLayers()-1)).numberOfNeurons();i++) {//for each output neuron
+			//double output = network.getLayer((network.numberOfLayers()-1)).getNeuron(i).getActivation();
+			//network.getOutputLayer().getNeuron(i).setError(2*(trainingOutputs.get(i) - output));//derivative of cost function (y-out)^2
+			
+			double softmaxOutput = networks.get(activeNetwork).getOutputLayer().getNeuron(i).getSoftmaxValue();
+			networks.get(activeNetwork).getOutputLayer().getNeuron(i).setError(-(softmaxOutput-trainingOutputs.get(i)));
+		}
+		//output layer cost has been set. Now go backwards through the network
+		for(int l=networks.get(activeNetwork).numberOfLayers()-1;l>0;l--) {//iterate backwards through the layers
+			for(int n=0;n<networks.get(activeNetwork).getLayer(l).numberOfNeurons();n++) {//iterate through the neurons;
+				double errorSum=0;
+				double activationDerivative = networks.get(activeNetwork).getLayer(l).getNeuron(n).activationFunctionDerivative(networks.get(activeNetwork).getLayer(l).getNeuron(n).getInput());;
+				for(int c=0;c<networks.get(activeNetwork).getLayer(l).getNeuron(n).numberOfInputConnections();c++) {//iterate through input connections of current neuron
+					double previousActivation = networks.get(activeNetwork).getLayer(l).getNeuron(n).getInputConnection(c).getInputNeuron().getActivation();
+					errorSum = networks.get(activeNetwork).getLayer(l).getNeuron(n).sumErrors();
+					double change = activationDerivative*previousActivation*errorSum; //calculate change in weight
+
+					networks.get(activeNetwork).getLayer(l).getNeuron(n).getInputConnection(c).getWeight().setChange(
+							networks.get(activeNetwork).getLearningRate()*change //set change in weight, but don't update the weight yet!
+						);
+				}
+				double biasChange = errorSum*activationDerivative; //calculate new change in bias
+				double newBias = networks.get(activeNetwork).getLayer(l).getNeuron(n).getBias() + (networks.get(activeNetwork).getLearningRate()*biasChange); //calculate new bias
+				networks.get(activeNetwork).getLayer(l).getNeuron(n).setBias(newBias); //update bias
+			}
+		}
+		//change has been calculated for all weights
+		//update all weights to reflect the changes
+		for(int l=(networks.get(activeNetwork).numberOfLayers()-1);l>0;l--) {//iterate backwards through the layers
+			for(int n=0;n<networks.get(activeNetwork).getLayer(l).numberOfNeurons();n++) {//iterate through the neurons
+				for(int c=0;c<networks.get(activeNetwork).getLayer(l).getNeuron(n).numberOfInputConnections();c++) {//iterate through input connections of current node
+					
+					networks.get(activeNetwork).getLayer(l).getNeuron(n).getInputConnection(c).updateWeight();
+					
+				}
+			}
+		}
+	}
+	
+	//---------------------------------------------------------------
+	//MUTATIONS
 	
 	private static void addRandomNeuron(NeuralNetwork input) {
 		Random rng = new Random();
@@ -234,6 +356,8 @@ public class AxonController {
 		}
 		//random layer selected. Add neuron to layer.
 		Neuron neuron = new Neuron(rng.nextDouble(), 0, 0, 0, input.getLayer(layer));
+		//randomly assign it an activation function
+		neuron.setCurrentFunction(rng.nextInt(neuron.getMaxFunctions()));
 		//neuron added to layer, now fully connect to previous and next layers.
 		for(int i=0;i<input.getLayer(layer-1).numberOfNeurons();i++) {//for all neurons in previous layer
 			//Constructors form the objects within the data structure.
@@ -290,6 +414,10 @@ public class AxonController {
 	}
 	
 	private static void removeRandomLayer(NeuralNetwork input) {
+		//if there is only one hidden layer, immediately return
+		if(input.numberOfLayers()<=3) {
+			return;
+		}
 		Random rng = new Random();
 		//pick random hidden layer
 		int layerIndex = rng.nextInt(input.numberOfLayers());
@@ -317,9 +445,11 @@ public class AxonController {
 		while(alteration==0) {
 			alteration = rng.nextInt(5)-2;
 		}
+		if(mutationRate+alteration <= 0) {
+			alteration *= -1;
+		}
 		mutationRate += alteration;
 		input.setMutationRate(mutationRate);
-		
 	}
 	
 	private static void changeActivations(NeuralNetwork input) {
@@ -360,11 +490,22 @@ public class AxonController {
 		int selectedNeuron = rng.nextInt(input.getLayer(layerIndex).numberOfNeurons());
 		//random neuron selected
 		//input or output connection?
-		int side = rng.nextInt(2);
-		if(side==0 && input.getLayer(layerIndex).getNeuron(selectedNeuron).hasInputConnections()) {
+		int side = rng.nextInt(2);//0 = input, 1 = output
+		if(side == 0 && !input.getLayer(layerIndex).getNeuron(selectedNeuron).hasInputConnections()) {//if inputs chosen but none exist
+			side = 1; //switch to outputs
+		}else if(side == 1 && !input.getLayer(layerIndex).getNeuron(selectedNeuron).hasOutputConnections()) {//inverse rule
+			side = 0;
+		}
+		if(side==0) {//now remove connection
+			if(input.getLayer(layerIndex).getNeuron(selectedNeuron).numberOfInputConnections()<=1) {
+				return;
+			}
 			int toDelete = rng.nextInt(input.getLayer(layerIndex).getNeuron(selectedNeuron).numberOfInputConnections());
 			input.getLayer(layerIndex).getNeuron(selectedNeuron).getInputConnection(toDelete).delete();
 		}else{
+			if(input.getLayer(layerIndex).getNeuron(selectedNeuron).numberOfOutputConnections()<=1) {
+				return;
+			}
 			int toDelete = rng.nextInt(input.getLayer(layerIndex).getNeuron(selectedNeuron).numberOfOutputConnections());
 			input.getLayer(layerIndex).getNeuron(selectedNeuron).getOutputConnection(toDelete).delete();			
 		}
@@ -389,7 +530,24 @@ public class AxonController {
 		}
 		//with the two random neuron selected, create a connection between them.
 		Connection con = new Connection(rng.nextDouble(),0,neuronOne,neuronTwo);
+	}
+	
+	/** Used for evolutionary algorithms. Generally at the very beginning of the project just to start off with a little design.
+	 * Set the activation function that the specified layer will use.
+	 * 0 - Sigmoid
+	 * 1 - Tanh
+	 * 2 - softplus
+	 * 3 - leakyReLU
+	 * 4 - swish
+	 * other - defaults to sigmoid
+	 * 
+	 * @param function
+	 */
+	public void setPrimaryNetworkLayerActivation(int layer, int function) {
+		for(int i=0;i<networks.get(0).getLayer(layer).numberOfNeurons();i++) {
+			networks.get(0).getLayer(layer).getNeuron(i).setCurrentFunction(function);
 		}
+	}
 	
 	private static void accuracyTest() {
 		NeuralNetwork example;
